@@ -17,6 +17,8 @@ Thumbs.db
 *.log
 *.lib
 *.sbr
+*.exe
+*.pdb
 obj/
 _ReSharper*/
 [Tt]est[Rr]esult*
@@ -25,3 +27,4 @@ _ReSharper*/
 *.ipch
 #Ignore files in intermediate directory
 intermediate/*
+

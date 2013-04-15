@@ -109,6 +109,8 @@
     <ClCompile Include="Cat.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MenuButton.cpp" />
+    <ClCompile Include="PhysicsWorld.cpp" />
+    <ClCompile Include="Shape.cpp" />
     <ClCompile Include="Tileset.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
@@ -126,8 +128,11 @@
     <ClInclude Include="..\foundation\types.h" />
     <ClInclude Include="Actor.h" />
     <ClInclude Include="array_functions.h" />
+    <ClInclude Include="Body.h" />
     <ClInclude Include="Cat.h" />
     <ClInclude Include="MenuButton.h" />
+    <ClInclude Include="PhysicsWorld.h" />
+    <ClInclude Include="Shape.h" />
     <ClInclude Include="Tileset.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
