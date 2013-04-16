@@ -145,12 +145,24 @@ namespace Scribble
 		bool Collided = false;
 		bool ColideBelowFeet = false;
 		int NumCollisions = 0;
+		float ClosestDistSq = 9999999999.9f;
+		int ClosestIdx = -1;
 		hgeRect* CollisionData = g_Tileset->GetCollisionForLayer( 0, NumCollisions );
 		for( int Idx = 0; Idx < NumCollisions; ++Idx )
 		{
 			if( OurCollision.Intersect( &CollisionData[Idx] ) )
 			{
 				Collided = true;
+
+				hgeVector CurrentCenter( CollisionData[Idx].x2 - CollisionData[Idx].x1, CollisionData[Idx].y2 - CollisionData[Idx].y1 );
+				hgeVector Dir = CurrentCenter - mLocation;
+				float CurrentDistSq = Dir.Dot( &Dir );
+				if( CurrentDistSq < ClosestDistSq )
+				{
+					ClosestDistSq = CurrentDistSq;
+					ClosestIdx = Idx;
+				}
+
 				// We have penetrated the thing from above
 				if( CollisionData[Idx].y1 < OurCollision.y2
 					// And didn't do it before the move 
@@ -169,6 +181,44 @@ namespace Scribble
 		else if( ColideBelowFeet )
 		{
 			mCurrentPhysics = PHYS_Walking;
+		}
+		else
+		{
+			hgeRect& ClosestCollision = CollisionData[ClosestIdx];
+			hgeVector CurrentCenter( ClosestCollision.x2 - ClosestCollision.x1, ClosestCollision.y2 - ClosestCollision.y1 );
+
+			hgeVector CenterToLocation = mLocation - CurrentCenter;
+			CenterToLocation.Normalize();
+
+			static const hgeVector Up( 0.0f, -1.0f );
+			static const hgeVector Right( 1.0f, 0.0f );
+			static const hgeVector Down( 0.0f, 1.0f );
+			static const hgeVector Left( -1.0f, 0.0f );
+
+			hgeVector HitNormal;
+			// Collision from top
+			if( CenterToLocation.Dot( &Up ) > 0 )
+			{
+				HitNormal = Up;
+			}
+			else if( CenterToLocation.Dot( &Right ) > 0 )
+			{
+				HitNormal = Right;
+			}
+			else if( CenterToLocation.Dot( &Left ) > 0 )
+			{
+				HitNormal = Left;
+			}
+			else
+			{
+				HitNormal = Down;
+			}
+
+			// Remove the velocity in the direction of the hit normal
+			hgeVector MoveVect = DesiredDestination - mLocation;
+			MoveVect += MoveVect.Dot( &HitNormal ) * -HitNormal;
+
+			mLocation += MoveVect;
 		}
 	}
 
