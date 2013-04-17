@@ -181,6 +181,8 @@ namespace Scribble
 		else if( ColideBelowFeet )
 		{
 			mCurrentPhysics = PHYS_Walking;
+			mVelocity.x = 0;
+			mVelocity.y = 0;
 		}
 		else
 		{
@@ -214,11 +216,14 @@ namespace Scribble
 				HitNormal = Down;
 			}
 
-			// Remove the velocity in the direction of the hit normal
+			// Don't move in the direction of the normal, just slide across the surface
 			hgeVector MoveVect = DesiredDestination - mLocation;
 			MoveVect += MoveVect.Dot( &HitNormal ) * -HitNormal;
 
 			mLocation += MoveVect;
+
+			// Remove the velocity in the direction of the hit normal
+			mVelocity += mVelocity.Dot( &HitNormal ) * -HitNormal;			
 		}
 	}
 
