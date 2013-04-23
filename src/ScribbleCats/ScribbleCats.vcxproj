@@ -126,6 +126,8 @@
     <ClInclude Include="..\foundation\string_stream.h" />
     <ClInclude Include="..\foundation\temp_allocator.h" />
     <ClInclude Include="..\foundation\types.h" />
+    <ClInclude Include="AARB.h" />
+    <ClInclude Include="PhysicsTypes.h" />
     <ClInclude Include="Actor.h" />
     <ClInclude Include="array_functions.h" />
     <ClInclude Include="Body.h" />

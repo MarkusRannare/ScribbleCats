@@ -3,7 +3,7 @@
 
 #include <foundation/collection_types.h>
 #include <hge/hge.h>
-#include <hge/hgerect.h>
+#include "PhysicsTypes.h"
 
 class hgeSprite;
 
@@ -17,7 +17,7 @@ namespace Scribble
 		short* TileData;
 
 		int NumCollisionEntries;
-		hgeRect* CollisionData;
+		Physics::AARB* CollisionData;
 		
 		HTEXTURE SourceTexture;
 	};
@@ -38,7 +38,7 @@ namespace Scribble
 				return ( TileData >> 5 ) - 1;
 			}
 
-			hgeRect* GetCollisionForLayer( int Layer, int& out_NumCollisions );
+			Physics::AARB* GetCollisionForLayer( int Layer, int& out_NumCollisions );
 		protected:
 			void CalculateCollisionData( int NumTilesX, int NumTilesY, short* TileData, TileLayer& Layer );
 		private:

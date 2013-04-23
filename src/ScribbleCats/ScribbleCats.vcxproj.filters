@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
-    </Filter>
     <Filter Include="Foundation">
       <UniqueIdentifier>{c14a3aec-0166-446a-a9c7-e2dd6f06c214}</UniqueIdentifier>
     </Filter>
@@ -27,6 +23,10 @@
     </Filter>
     <Filter Include="Source Files\Physics">
       <UniqueIdentifier>{195eb133-bbfc-4d03-9c24-32f3479bb6dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -123,6 +123,12 @@
       <Filter>Header Files\Phisics</Filter>
     </ClInclude>
     <ClInclude Include="Body.h">
+      <Filter>Header Files\Phisics</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsTypes.h">
+      <Filter>Header Files\Phisics</Filter>
+    </ClInclude>
+    <ClInclude Include="AARB.h">
       <Filter>Header Files\Phisics</Filter>
     </ClInclude>
   </ItemGroup>
