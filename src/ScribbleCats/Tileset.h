@@ -17,7 +17,7 @@ namespace Scribble
 		short* TileData;
 
 		int NumCollisionEntries;
-		Physics::AARB* CollisionData;
+		AARB* CollisionData;
 		
 		HTEXTURE SourceTexture;
 	};
@@ -38,7 +38,7 @@ namespace Scribble
 				return ( TileData >> 5 ) - 1;
 			}
 
-			Physics::AARB* GetCollisionForLayer( int Layer, int& out_NumCollisions );
+			AARB* GetCollisionForLayer( int Layer, int& out_NumCollisions );
 		protected:
 			void CalculateCollisionData( int NumTilesX, int NumTilesY, short* TileData, TileLayer& Layer );
 		private:

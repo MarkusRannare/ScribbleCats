@@ -1,7 +1,7 @@
 #ifndef SCRIBBLE_SHAPE_H
 #define SCRIBBLE_SHAPE_H
 
-#include <hge/hgevector.h>
+#include "Vector2.h"
 
 namespace Scribble
 {
@@ -18,7 +18,7 @@ namespace Scribble
 
 			 EType GetType() const;
 
-			 virtual bool TestPoint( hgeVector Point ) = 0;
+			 virtual bool TestPoint( Vector2 Point ) = 0;
 		private:
 			EType mType;
 	};

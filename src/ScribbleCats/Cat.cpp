@@ -12,13 +12,13 @@ using namespace foundation;
 
 namespace Scribble
 {
-	Cat::Cat( hgeVector Location ) :
+	Cat::Cat( Vector2 Location ) :
 		Actor( Location ),
 		mCurrentPhysics( PHYS_Falling ),
 		mVelocity( 0, 0 ),
 		mAcceleration( 0, 0 )
 	{
-		mSprite = MAKE_NEW( memory_globals::default_allocator(), hgeSprite, NULL, Location.x, Location.y, 20, 20 );
+		mSprite = MAKE_NEW( memory_globals::default_allocator(), hgeSprite, NULL, Location.X, Location.Y, 20, 20 );
 		mSprite->SetHotSpot( 10, 10 );
 	}
 
@@ -54,50 +54,50 @@ namespace Scribble
 		}
 	}
 
-	Physics::AARB DL;
-	Physics::AARB CollidingBlock;
-	Physics::AARB FeetCol;
+	AARB DL;
+	AARB CollidingBlock;
+	AARB FeetCol;
 
 	void Cat::PhysWalking( float Dt )
 	{
-		hgeVector MoveDirection( 0, 0 );
+		Vector2 MoveDirection( 0, 0 );
 
-		mAcceleration.x = 0;
-		mAcceleration.y = 0;
+		mAcceleration.X = 0;
+		mAcceleration.Y = 0;
 
 		if( mRightHold )
 		{
-			MoveDirection.x = 1;
+			MoveDirection.X = 1;
 		}
 		if( mLeftHold )
 		{
-			MoveDirection.x = -1;
+			MoveDirection.X = -1;
 		}
 		
 		mVelocity = MoveDirection * 100.0f;
 		if( mJumpPressed )
 		{
 			mCurrentPhysics = PHYS_Falling;
-			mVelocity.y -= 300.0f;
+			mVelocity.Y -= 300.0f;
 		}
 
-		hgeVector DesiredDestination = mLocation + mVelocity * Dt + 0.5f * mAcceleration * Dt * Dt;
+		Vector2 DesiredDestination = mLocation + mVelocity * Dt + 0.5f * mAcceleration * Dt * Dt;
 
-		Physics::AARB OldCollision;
-		Physics::CreateBox( mLocation, mSprite->GetWidth(), OldCollision );
-		Physics::AARB OurCollision;
-		Physics::CreateBox( DesiredDestination, mSprite->GetWidth(), OurCollision );
+		AARB OldCollision;
+		aarb::CreateBox( mLocation, mSprite->GetWidth(), OldCollision );
+		AARB OurCollision;
+		aarb::CreateBox( DesiredDestination, mSprite->GetWidth(), OurCollision );
 
 		DL = OurCollision;
 		
 		// Feet collision is five units belove our character
-		Physics::AARB FeetCollision;
+		AARB FeetCollision;
 		// Same as character
 		FeetCollision = OurCollision;
 		// Move center down to bottom of character + 2.5f units
-		FeetCollision._Center.y += FeetCollision._Extent.y + 2.5f;
+		FeetCollision._Center.Y += FeetCollision._Extent.Y + 2.5f;
 		// Make y extent endend down to 5 units below it
-		FeetCollision._Extent.y = 5.0f;
+		FeetCollision._Extent.Y = 5.0f;
 
 		FeetCol = FeetCollision;
 
@@ -107,15 +107,15 @@ namespace Scribble
 
 		bool ColideBelowFeet = false;
 		int NumCollisions = 0;
-		Physics::AARB* CollisionData = g_Tileset->GetCollisionForLayer( 0, NumCollisions );
+		AARB* CollisionData = g_Tileset->GetCollisionForLayer( 0, NumCollisions );
 		for( int Idx = 0; Idx < NumCollisions; ++Idx )
 		{
-			if( Physics::Intersects( OurCollision, CollisionData[Idx] ) )
+			if( aarb::Intersects( OurCollision, CollisionData[Idx] ) )
 			{
 				Collided = true;
 				CollidingBlock = CollisionData[Idx];
 			}
-			else if( Physics::Intersects( FeetCollision, CollisionData[Idx] ) )
+			else if( aarb::Intersects( FeetCollision, CollisionData[Idx] ) )
 			{
 				ColideBelowFeet = true;
 
@@ -141,28 +141,28 @@ namespace Scribble
 	{
 		static const float GRAVITY = 666.0f;
 
-		mAcceleration.x = 0;
-		mAcceleration.y = 0;
+		mAcceleration.X = 0;
+		mAcceleration.Y = 0;
 
-		mAcceleration.y += GRAVITY;
+		mAcceleration.Y += GRAVITY;
 
 		mVelocity += mAcceleration * Dt;
 			
 		if( mRightHold )
 		{
-			mVelocity.x += 66.6f * Dt;
+			mVelocity.X += 66.6f * Dt;
 		}
 		if( mLeftHold )
 		{
-			mVelocity.x -= 66.6f * Dt;
+			mVelocity.X -= 66.6f * Dt;
 		}
 
-		hgeVector DesiredDestination = mLocation + mVelocity * Dt + 0.5f * mAcceleration * Dt * Dt;
+		Vector2 DesiredDestination = mLocation + mVelocity * Dt + 0.5f * mAcceleration * Dt * Dt;
 		
-		Physics::AARB OldCollision;
-		Physics::CreateBox( mLocation, mSprite->GetWidth(), OldCollision );
-		Physics::AARB OurCollision;
-		Physics::CreateBox( DesiredDestination, mSprite->GetWidth(), OurCollision );
+		AARB OldCollision;
+		aarb::CreateBox( mLocation, mSprite->GetWidth(), OldCollision );
+		AARB OurCollision;
+		aarb::CreateBox( DesiredDestination, mSprite->GetWidth(), OurCollision );
 
 		DL = OurCollision;
 		
@@ -173,16 +173,16 @@ namespace Scribble
 		int NumCollisions = 0;
 		float ClosestDistSq = 9999999999.9f;
 		int ClosestIdx = -1;
-		Physics::AARB* CollisionData = g_Tileset->GetCollisionForLayer( 0, NumCollisions );
+		AARB* CollisionData = g_Tileset->GetCollisionForLayer( 0, NumCollisions );
 		for( int Idx = 0; Idx < NumCollisions; ++Idx )
 		{
-			if( Physics::Intersects( OurCollision, CollisionData[Idx] ) )
+			if( aarb::Intersects( OurCollision, CollisionData[Idx] ) )
 			{
 				Collided = true;
 
-				hgeVector CurrentCenter = CollisionData[Idx]._Center;
-				hgeVector Dir = CurrentCenter - mLocation;
-				float CurrentDistSq = Dir.Dot( &Dir );
+				Vector2 CurrentCenter = CollisionData[Idx]._Center;
+				Vector2 Dir = CurrentCenter - mLocation;
+				float CurrentDistSq = Dir.Dot( Dir );
 				if( CurrentDistSq < ClosestDistSq )
 				{
 					ClosestDistSq = CurrentDistSq;
@@ -191,9 +191,9 @@ namespace Scribble
 				}
 				
 				// We have penetrated the thing from above
-				if( ( OurCollision._Center.y + OurCollision._Extent.y ) > ( CollisionData[Idx]._Center.y - CollisionData[Idx]._Extent.y )
+				if( ( OurCollision._Center.Y + OurCollision._Extent.Y ) > ( CollisionData[Idx]._Center.Y - CollisionData[Idx]._Extent.Y )
 					// And didn't do it before the move 
-					&& ( OldCollision._Center.y - OldCollision._Center.y ) < ( CollisionData[Idx]._Center.y + CollisionData[Idx]._Extent.y ) )
+					&& ( OldCollision._Center.Y - OldCollision._Center.Y ) < ( CollisionData[Idx]._Center.Y + CollisionData[Idx]._Extent.Y ) )
 				{
 					ColideBelowFeet = true;
 					break;
@@ -208,33 +208,33 @@ namespace Scribble
 		else if( ColideBelowFeet )
 		{
 			mCurrentPhysics = PHYS_Walking;
-			mVelocity.x = 0;
-			mVelocity.y = 0;
+			mVelocity.X = 0;
+			mVelocity.Y = 0;
 		}
 		else
 		{
-			Physics::AARB& ClosestCollision = CollisionData[ClosestIdx];
-			hgeVector CurrentCenter = ClosestCollision._Center;
+			AARB& ClosestCollision = CollisionData[ClosestIdx];
+			Vector2 CurrentCenter = ClosestCollision._Center;
 
-			hgeVector CenterToLocation = mLocation - CurrentCenter;
+			Vector2 CenterToLocation = mLocation - CurrentCenter;
 			CenterToLocation.Normalize();
 
-			static const hgeVector Up( 0.0f, -1.0f );
-			static const hgeVector Right( 1.0f, 0.0f );
-			static const hgeVector Down( 0.0f, 1.0f );
-			static const hgeVector Left( -1.0f, 0.0f );
+			static const Vector2 Up( 0.0f, -1.0f );
+			static const Vector2 Right( 1.0f, 0.0f );
+			static const Vector2 Down( 0.0f, 1.0f );
+			static const Vector2 Left( -1.0f, 0.0f );
 
-			hgeVector HitNormal;
+			Vector2 HitNormal;
 			// Collision from top
-			if( CenterToLocation.Dot( &Up ) > 0 )
+			if( CenterToLocation.Dot( Up ) > 0 )
 			{
 				HitNormal = Up;
 			}
-			else if( CenterToLocation.Dot( &Right ) > 0 )
+			else if( CenterToLocation.Dot( Right ) > 0 )
 			{
 				HitNormal = Right;
 			}
-			else if( CenterToLocation.Dot( &Left ) > 0 )
+			else if( CenterToLocation.Dot( Left ) > 0 )
 			{
 				HitNormal = Left;
 			}
@@ -244,35 +244,35 @@ namespace Scribble
 			}
 
 			// Don't move in the direction of the normal, just slide across the surface
-			hgeVector MoveVect = DesiredDestination - mLocation;
-			MoveVect += MoveVect.Dot( &HitNormal ) * -HitNormal;
+			Vector2 MoveVect = DesiredDestination - mLocation;
+			MoveVect += MoveVect.Dot( HitNormal ) * -HitNormal;
 
 			mLocation += MoveVect;
 
 			// Remove the velocity in the direction of the hit normal
-			mVelocity += mVelocity.Dot( &HitNormal ) * -HitNormal;			
+			mVelocity += mVelocity.Dot( HitNormal ) * -HitNormal;			
 		}
 	}
 
-	void DrawAARB( const Physics::AARB& A, DWORD Color )
+	void DrawAARB( const AARB& A, DWORD Color )
 	{
 		// Top line
-		g_Hge->Gfx_RenderLine( A._Center.x - A._Extent.x, A._Center.y - A._Extent.y, 
-			A._Center.x + A._Extent.x, A._Center.y - A._Extent.y,
+		g_Hge->Gfx_RenderLine( A._Center.X - A._Extent.X, A._Center.Y - A._Extent.Y, 
+			A._Center.X + A._Extent.X, A._Center.Y - A._Extent.Y,
 			Color );
 		// Right line
-		g_Hge->Gfx_RenderLine( A._Center.x + A._Extent.x, A._Center.y - A._Extent.y, 
-			A._Center.x + A._Extent.x, A._Center.y + A._Extent.y,
+		g_Hge->Gfx_RenderLine( A._Center.X + A._Extent.X, A._Center.Y - A._Extent.Y, 
+			A._Center.X + A._Extent.X, A._Center.Y + A._Extent.Y,
 			Color );
 
 		// Bottom line
-		g_Hge->Gfx_RenderLine( A._Center.x + A._Extent.x, A._Center.y + A._Extent.y, 
-			A._Center.x - A._Extent.x, A._Center.y + A._Extent.y,
+		g_Hge->Gfx_RenderLine( A._Center.X + A._Extent.X, A._Center.Y + A._Extent.Y, 
+			A._Center.X - A._Extent.X, A._Center.Y + A._Extent.Y,
 			Color );
 
 		// Left line
-		g_Hge->Gfx_RenderLine( A._Center.x - A._Extent.x, A._Center.y + A._Extent.y, 
-			A._Center.x - A._Extent.x, A._Center.y - A._Extent.y,
+		g_Hge->Gfx_RenderLine( A._Center.X - A._Extent.X, A._Center.Y + A._Extent.Y, 
+			A._Center.X - A._Extent.X, A._Center.Y - A._Extent.Y,
 			Color );
 	}
 
@@ -280,7 +280,7 @@ namespace Scribble
 	{
 		if( mSprite != NULL )
 		{
-			mSprite->Render( mLocation.x, mLocation.y );
+			mSprite->Render( mLocation.X, mLocation.Y );
 
 			//DrawAARB( OL, 0xffff0000 );
 			DrawAARB( DL, 0xff00ff00 );

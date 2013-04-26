@@ -63,6 +63,9 @@
     <ClCompile Include="PhysicsWorld.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
+    <ClCompile Include="Vector2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MenuButton.h">
@@ -130,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="AARB.h">
       <Filter>Header Files\Phisics</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

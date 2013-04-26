@@ -112,6 +112,7 @@
     <ClCompile Include="PhysicsWorld.cpp" />
     <ClCompile Include="Shape.cpp" />
     <ClCompile Include="Tileset.cpp" />
+    <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -136,6 +137,7 @@
     <ClInclude Include="PhysicsWorld.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="Tileset.h" />
+    <ClInclude Include="Vector2.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

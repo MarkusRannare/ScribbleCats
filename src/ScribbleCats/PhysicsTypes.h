@@ -1,18 +1,15 @@
 #ifndef SCRIBBLE_PHYSICSTYPES_H
 #define SCRIBBLE_PHYSICSTYPES_H
 
-#include <hge/hgevector.h>
+#include "Vector2.h"
 
 namespace Scribble
 {
-	namespace Physics
+	struct AARB
 	{
-		struct AARB
-		{
-			hgeVector _Center;
-			hgeVector _Extent;
-		};
-	}
+		Vector2 _Center;
+		Vector2 _Extent;
+	};
 }
 
 #endif

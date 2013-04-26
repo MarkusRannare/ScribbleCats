@@ -2,7 +2,7 @@
 
 namespace Scribble
 {
-	Actor::Actor( hgeVector Location ) :
+	Actor::Actor( Vector2 Location ) :
 		mLocation( Location )
 	{
 	}

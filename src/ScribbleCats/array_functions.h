@@ -1,7 +1,7 @@
 #ifndef SCRIBBLE_ARRAY_FUNCTIONS_H
 #define SCRIBBLE_ARRAY_FUNCTIONS_H
 
-#include <WinBase.h>
+#include <Windows.h>
 #include "foundation/array.h"
 
 namespace foundation

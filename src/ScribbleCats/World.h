@@ -15,7 +15,7 @@ namespace Scribble
 
 			// T is expecting a Entity
 			template<class T>
-			T* Spawn( hgeVector Location )
+			T* Spawn( Vector2 Location )
 			{
 				Actor* NewActor = MAKE_NEW( memory_globals::default_allocator(), T, Location );
 				

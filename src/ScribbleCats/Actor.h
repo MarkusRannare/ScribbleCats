@@ -1,7 +1,7 @@
 #ifndef SCRIBBLE_ACTOR_H
 #define SCRIBBLE_ACTOR_H
 
-#include <hge/hgevector.h>
+#include "Vector2.h"
 
 namespace Scribble
 {
@@ -15,13 +15,13 @@ namespace Scribble
 			virtual void Tick( float Dt );
 			virtual void Render();
 		protected:
-			Actor( hgeVector Location );
+			Actor( Vector2 Location );
 		private:
 			Actor(); // - No default constructor
 		private:
 			friend class World;
 		protected:
-			hgeVector mLocation;
+			Vector2 mLocation;
 	};
 }
 

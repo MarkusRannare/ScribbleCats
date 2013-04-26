@@ -58,7 +58,7 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 
 		g_World = MAKE_NEW( memory_globals::default_allocator(), World );
 		g_Tileset = MAKE_NEW( memory_globals::default_allocator(), Tileset, 32, 0, 0 );
-		g_Cat = g_World->Spawn<Cat>( hgeVector( 200, 100 ) );
+		g_Cat = g_World->Spawn<Cat>( Vector2( 200, 100 ) );
 		g_Tileset->AddLayer( 100, 100, LoadTileLayer( "CollisionTest.MAR" ), g_Hge->Texture_Load( "../Media/Textures/Tileset.png" ) ); 
 
 		g_Hge->System_Start();

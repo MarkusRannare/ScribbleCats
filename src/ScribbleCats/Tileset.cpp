@@ -2,7 +2,7 @@
 #include <foundation/memory.h>
 #include "array_functions.h"
 #include <hge/hgesprite.h>
-#include <hge/hgevector.h>
+#include "Vector2.h"
 
 using namespace foundation;
 
@@ -52,7 +52,7 @@ namespace Scribble
 
 		// This should be changed as it might become quite big buffer if we increase the level size
 		// it is already ~156.25kb on a 100*100 tileset
-		Physics::AARB* TempCollisionData = (Physics::AARB*)memory_globals::default_scratch_allocator().allocate( NumTilesX * NumTilesY * sizeof(Physics::AARB) );
+		AARB* TempCollisionData = (AARB*)memory_globals::default_scratch_allocator().allocate( NumTilesX * NumTilesY * sizeof(AARB) );
 		for( int Y = 0; Y < NumTilesY; ++Y )
 		{
 			for( int X = 0; X < NumTilesX; ++X )
@@ -61,9 +61,9 @@ namespace Scribble
 				short TileId = GetTileId( TileData[X+Y*NumTilesX] );
 				if( TileId >= 0 )
 				{
-					Physics::AARB& Collision = TempCollisionData[Layer.NumCollisionEntries++];
-					Collision._Center = hgeVector( X * mTileWidth + mTileWidth / 2.0f, Y * mTileWidth + mTileWidth / 2.0f );
-					Collision._Extent = hgeVector( mTileWidth / 2.0f, mTileWidth / 2.0f );
+					AARB& Collision = TempCollisionData[Layer.NumCollisionEntries++];
+					Collision._Center = Vector2( X * mTileWidth + mTileWidth / 2.0f, Y * mTileWidth + mTileWidth / 2.0f );
+					Collision._Extent = Vector2( mTileWidth / 2.0f, mTileWidth / 2.0f );
 					/*Collision.Set( 
 						X * mTileWidth,					// x1
 						Y * mTileWidth,					// y1
@@ -73,12 +73,12 @@ namespace Scribble
 			}
 		}
 
-		Layer.CollisionData = (Physics::AARB*)memory_globals::default_allocator().allocate( Layer.NumCollisionEntries * sizeof(Physics::AARB) );
-		memcpy_s( Layer.CollisionData, Layer.NumCollisionEntries * sizeof(Physics::AARB), TempCollisionData, Layer.NumCollisionEntries * sizeof(Physics::AARB) );
+		Layer.CollisionData = (AARB*)memory_globals::default_allocator().allocate( Layer.NumCollisionEntries * sizeof(AARB) );
+		memcpy_s( Layer.CollisionData, Layer.NumCollisionEntries * sizeof(AARB), TempCollisionData, Layer.NumCollisionEntries * sizeof(AARB) );
 		memory_globals::default_scratch_allocator().deallocate( TempCollisionData );
 	}
 
-	Physics::AARB* Tileset::GetCollisionForLayer( int Layer, int& out_NumCollisions )
+	AARB* Tileset::GetCollisionForLayer( int Layer, int& out_NumCollisions )
 	{
 		out_NumCollisions = mLayers[Layer].NumCollisionEntries;
 

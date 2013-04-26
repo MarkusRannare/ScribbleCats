@@ -16,7 +16,7 @@ namespace Scribble
 				PHYS_Walking
 			};
 		public:
-			Cat( hgeVector Location );
+			Cat( Vector2 Location );
 			virtual ~Cat();
 
 			void SimulatePhysics( float Dt );
@@ -29,8 +29,8 @@ namespace Scribble
 		private:
 			Cat(); // -no default constructor
 		private:
-			hgeVector mAcceleration;
-			hgeVector mVelocity;
+			Vector2 mAcceleration;
+			Vector2 mVelocity;
 
 			hgeSprite* mSprite;
 

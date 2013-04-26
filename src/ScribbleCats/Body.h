@@ -1,7 +1,7 @@
 #ifndef SCRIBBLE_BODY_H
 #define SCRIBBLE_BODY_H
 
-#include <hge/hgevector.h>
+#include "Vector2.h"
 
 namespace Scribble
 {
@@ -17,8 +17,8 @@ namespace Scribble
 	{
 		Shape* Shape;
 
-		hgeVector Location;
-		hgeVector Velocity;
+		Vector2 Location;
+		Vector2 Velocity;
 
 		float Mass;
 		float Rotation;
