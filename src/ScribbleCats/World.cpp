@@ -136,6 +136,8 @@ namespace Scribble
 		const float TIMESLICE_EPSILON = 0.00001f;
 		int Counter = 0;
 
+		Vector2 OldVelocity = Actor->mVelocity;
+
 		while( TimesliceLeft > TIMESLICE_EPSILON )
 		{
 			CollisionData CollisionInfo;
@@ -151,13 +153,8 @@ namespace Scribble
 			{
 				HitSomething = true;
 
-				Vector2 OldVelocity = Actor->mVelocity;
-
 				Vector2 NewTargetLocation;
-				if( ResolveCollision( Actor, TargetLocation, CollisionInfo, TimesliceLeft, NewTargetLocation ) )
-				{
-					break;
-				}
+				bool ShouldAbort = ResolveCollision( Actor, TargetLocation, CollisionInfo, TimesliceLeft, NewTargetLocation );
 				TargetLocation = NewTargetLocation;
 
 				// We have possible landed
@@ -169,6 +166,11 @@ namespace Scribble
 				TimesliceLeft = ( 1.0f - CollisionInfo.FirstContact ) * TimesliceLeft;
 				
 				if( Counter++ > 32 )
+				{
+					ShouldAbort = true;
+				}
+
+				if( ShouldAbort )
 				{
 					break;
 				}

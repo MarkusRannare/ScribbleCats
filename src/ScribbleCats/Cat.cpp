@@ -123,7 +123,7 @@ namespace Scribble
  		g_World->MoveActor( this, mLocation + Vector2( 0, -5.0f ) );
 		g_World->MoveActor( this, mLocation + MoveDirection * 300.0f * Dt );
 
-		if( !g_World->MoveActor( this, mLocation + Vector2( 0, 5.2f ) ) )
+		if( !g_World->MoveActor( this, mLocation + Vector2( 0, 5.1f ) ) )
 		{
 			mCurrentPhysics = PHYS_Falling;
 		}

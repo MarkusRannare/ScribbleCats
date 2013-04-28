@@ -140,7 +140,7 @@ namespace Scribble
 		// Possible last time of contact
 		out_CollisionData->LastContact = min( U1.X, U1.Y );
 
-		if( out_CollisionData->FirstContact < 1.0f && out_CollisionData->FirstContact <= out_CollisionData->LastContact )
+		if( out_CollisionData->FirstContact <= 1.0f && out_CollisionData->FirstContact <= out_CollisionData->LastContact )
 		{
 			// Calculate normal here too
 			AARB Contact = AARB( FromLocation + ( FromLocation - ToLocation ) * out_CollisionData->FirstContact, Extent );
