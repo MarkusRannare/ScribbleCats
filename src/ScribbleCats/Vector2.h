@@ -28,9 +28,22 @@ namespace Scribble
 		{
 		}
 
-		inline Vector2 operator=( const Vector2& Other ) const
+		inline const Vector2& operator=( const Vector2& Other )
 		{
-			return Vector2( Other );
+			X = Other.X;
+			Y = Other.Y;
+
+			return *this;
+		}
+
+		inline bool operator==( const Vector2& Other ) const
+		{
+			return X == Other.X && Y == Other.Y;
+		}
+
+		inline bool operator!=( const Vector2& Other ) const
+		{
+			return X != Other.X || Y != Other.Y;
 		}
 
 		Vector2 operator+( const Vector2& Rhs ) const
@@ -90,16 +103,6 @@ namespace Scribble
 			return *this;
 		}
 
-		bool operator ==( const Vector2& Rhs ) const
-		{
-			return ( X == Rhs.X ) && ( Y == Rhs.Y );
-		}
-
-		bool operator !=( const Vector2& Rhs ) const
-		{
-			return ( X != Rhs.X ) || ( Y != Rhs.Y );
-		}
-
 		float Dot( const Vector2& Rhs ) const
 		{
 			return X * Rhs.X + Y * Rhs.Y;
@@ -154,24 +157,27 @@ namespace Scribble
 
 		inline float operator []( int Idx ) const
 		{
-			assert( Idx >= 0 && Idx < 2 );
+			assert( Idx >= X_AXIS && Idx <= Y_AXIS );
 			
 			return Values[ Idx ];	
 		}
 
 		inline float& operator[]( int Idx )
 		{
-			assert( Idx >= 0 && Idx < 2 );
+			assert( Idx >= X_AXIS && Idx <= Y_AXIS );
 
 			return Values[ Idx ];	
 		}
 
-		static const Vector2 Zero;
-		static const Vector2 One;
-		static const Vector2 Up;
-		static const Vector2 Down;
-		static const Vector2 Left;
-		static const Vector2 Right;
+		static const Vector2 ZERO;
+		static const Vector2 ONE;
+		static const Vector2 UP;
+		static const Vector2 DOWN;
+		static const Vector2 LEFT;
+		static const Vector2 RIGHT;
+
+		static const int X_AXIS;
+		static const int Y_AXIS;
 
 		/// Members
 		union

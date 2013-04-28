@@ -125,9 +125,6 @@
     <ClInclude Include="Shape.h">
       <Filter>Header Files\Phisics</Filter>
     </ClInclude>
-    <ClInclude Include="Body.h">
-      <Filter>Header Files\Phisics</Filter>
-    </ClInclude>
     <ClInclude Include="PhysicsTypes.h">
       <Filter>Header Files\Phisics</Filter>
     </ClInclude>

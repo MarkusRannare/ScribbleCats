@@ -7,6 +7,8 @@
 
 namespace Scribble
 {
+	class PhysicsWorld;
+
 	class World
 	{
 		public:
@@ -34,7 +36,20 @@ namespace Scribble
 
 			virtual void Tick( float Dt );
 			virtual void Render();
+
+			PhysicsWorld* GetPhysicsWorld() const;
+
+			bool SetActorLocation( Actor* Actor, const Vector2& ToLocation );
+			bool MoveActor( Actor* Actor, const Vector2& ToLocation );
+		protected:
+			bool ResolveCollision( Actor* Actor, 
+				const Vector2& TargetLocation, 
+				const CollisionData& CollisionInfo, 
+				float TimesliceRemaining, 
+				Vector2& out_NewWantedLocation );
 		private:
+			PhysicsWorld* mPhysicsWorld;
+
 			foundation::Array<Actor*> mActors;
 			foundation::Array<Actor*> mNewActors;
 			foundation::Array<Actor*> mDeadActors;

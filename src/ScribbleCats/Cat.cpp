@@ -3,8 +3,10 @@
 #include <memory>
 #include <hge/hge.h>
 #include "Tileset.h"
+#include "World.h"
 
 #include "AARB.h"
+#include "PhysicsWorld.h"
 
 extern HGE* g_Hge;
 
@@ -14,12 +16,15 @@ namespace Scribble
 {
 	Cat::Cat( Vector2 Location ) :
 		Actor( Location ),
-		mCurrentPhysics( PHYS_Falling ),
-		mVelocity( 0, 0 ),
 		mAcceleration( 0, 0 )
 	{
 		mSprite = MAKE_NEW( memory_globals::default_allocator(), hgeSprite, NULL, Location.X, Location.Y, 20, 20 );
 		mSprite->SetHotSpot( 10, 10 );
+
+		mCollision._Center = mLocation;
+		mCollision._Extent = Vector2( 10, 10 );
+
+		mCurrentPhysics = PHYS_Falling;
 	}
 
 	Cat::~Cat()
@@ -36,7 +41,7 @@ namespace Scribble
 
 		mJumpPressed = g_Hge->Input_KeyDown( HGEK_SPACE );
 	
-		SimulatePhysics( Dt );
+		Actor::Tick( Dt );
 	}
 
 	void Cat::SimulatePhysics( float Dt )
@@ -54,13 +59,52 @@ namespace Scribble
 		}
 	}
 
-	AARB DL;
-	AARB CollidingBlock;
-	AARB FeetCol;
+	void Cat::PhysFalling( float Dt )
+	{
+		static const float GRAVITY = 666.0f;
+
+		mAcceleration.X = 0;
+		mAcceleration.Y = 0;
+
+		mAcceleration.Y += GRAVITY;
+
+		mVelocity += mAcceleration * Dt;
+
+		if( mRightHold )
+		{
+			mVelocity.X += 66.0f * Dt;
+		}
+		if( mLeftHold )
+		{
+			mVelocity.X -= 66.0f * Dt;
+		}
+
+		Vector2 DesiredDestination = mLocation + mVelocity * Dt + 0.5f * mAcceleration * Dt * Dt;
+
+		g_World->MoveActor( this, DesiredDestination );
+	}
+
+	void Cat::Landed( const CollisionData& CollisionInfo )
+	{
+		if( CollisionInfo._Normal.Y < -0.8f )
+		{
+			mCurrentPhysics = PHYS_Walking;
+		}
+	}
 
 	void Cat::PhysWalking( float Dt )
 	{
+		if( mJumpPressed )
+		{
+			mCurrentPhysics = PHYS_Falling;
+			mVelocity.Y -= 300.0f;
+
+			return;
+		}
+
 		Vector2 MoveDirection( 0, 0 );
+		mVelocity.X = 0;
+		mVelocity.Y = 0;
 
 		mAcceleration.X = 0;
 		mAcceleration.Y = 0;
@@ -73,207 +117,16 @@ namespace Scribble
 		{
 			MoveDirection.X = -1;
 		}
-		
-		mVelocity = MoveDirection * 100.0f;
-		if( mJumpPressed )
-		{
-			mCurrentPhysics = PHYS_Falling;
-			mVelocity.Y -= 300.0f;
-		}
 
-		Vector2 DesiredDestination = mLocation + mVelocity * Dt + 0.5f * mAcceleration * Dt * Dt;
+		mVelocity = MoveDirection * 150.0f;
 
-		AARB OldCollision;
-		aarb::CreateBox( mLocation, mSprite->GetWidth(), OldCollision );
-		AARB OurCollision;
-		aarb::CreateBox( DesiredDestination, mSprite->GetWidth(), OurCollision );
+ 		g_World->MoveActor( this, mLocation + Vector2( 0, -5.0f ) );
+		g_World->MoveActor( this, mLocation + MoveDirection * 300.0f * Dt );
 
-		DL = OurCollision;
-		
-		// Feet collision is five units belove our character
-		AARB FeetCollision;
-		// Same as character
-		FeetCollision = OurCollision;
-		// Move center down to bottom of character + 2.5f units
-		FeetCollision._Center.Y += FeetCollision._Extent.Y + 2.5f;
-		// Make y extent endend down to 5 units below it
-		FeetCollision._Extent.Y = 5.0f;
-
-		FeetCol = FeetCollision;
-
-		extern Tileset* g_Tileset;
-
-		bool Collided = false;
-
-		bool ColideBelowFeet = false;
-		int NumCollisions = 0;
-		AARB* CollisionData = g_Tileset->GetCollisionForLayer( 0, NumCollisions );
-		for( int Idx = 0; Idx < NumCollisions; ++Idx )
-		{
-			if( aarb::Intersects( OurCollision, CollisionData[Idx] ) )
-			{
-				Collided = true;
-				CollidingBlock = CollisionData[Idx];
-			}
-			else if( aarb::Intersects( FeetCollision, CollisionData[Idx] ) )
-			{
-				ColideBelowFeet = true;
-
-				// If we have collided and have collision below our feets, then we don't need any more collision tests
-				if( Collided )
-				{
-					break;
-				}
-			}
-		}
-
-		if( !ColideBelowFeet )
+		if( !g_World->MoveActor( this, mLocation + Vector2( 0, 5.2f ) ) )
 		{
 			mCurrentPhysics = PHYS_Falling;
 		}
-		else if( !Collided )
-		{
-			mLocation = DesiredDestination;
-		}
-	}
-
-	void Cat::PhysFalling( float Dt )
-	{
-		static const float GRAVITY = 666.0f;
-
-		mAcceleration.X = 0;
-		mAcceleration.Y = 0;
-
-		mAcceleration.Y += GRAVITY;
-
-		mVelocity += mAcceleration * Dt;
-			
-		if( mRightHold )
-		{
-			mVelocity.X += 66.6f * Dt;
-		}
-		if( mLeftHold )
-		{
-			mVelocity.X -= 66.6f * Dt;
-		}
-
-		Vector2 DesiredDestination = mLocation + mVelocity * Dt + 0.5f * mAcceleration * Dt * Dt;
-		
-		AARB OldCollision;
-		aarb::CreateBox( mLocation, mSprite->GetWidth(), OldCollision );
-		AARB OurCollision;
-		aarb::CreateBox( DesiredDestination, mSprite->GetWidth(), OurCollision );
-
-		DL = OurCollision;
-		
-		extern Tileset* g_Tileset;
-
-		bool Collided = false;
-		bool ColideBelowFeet = false;
-		int NumCollisions = 0;
-		float ClosestDistSq = 9999999999.9f;
-		int ClosestIdx = -1;
-		AARB* CollisionData = g_Tileset->GetCollisionForLayer( 0, NumCollisions );
-		for( int Idx = 0; Idx < NumCollisions; ++Idx )
-		{
-			if( aarb::Intersects( OurCollision, CollisionData[Idx] ) )
-			{
-				Collided = true;
-
-				Vector2 CurrentCenter = CollisionData[Idx]._Center;
-				Vector2 Dir = CurrentCenter - mLocation;
-				float CurrentDistSq = Dir.Dot( Dir );
-				if( CurrentDistSq < ClosestDistSq )
-				{
-					ClosestDistSq = CurrentDistSq;
-					ClosestIdx = Idx;
-					CollidingBlock = CollisionData[Idx];
-				}
-				
-				// We have penetrated the thing from above
-				if( ( OurCollision._Center.Y + OurCollision._Extent.Y ) > ( CollisionData[Idx]._Center.Y - CollisionData[Idx]._Extent.Y )
-					// And didn't do it before the move 
-					&& ( OldCollision._Center.Y - OldCollision._Center.Y ) < ( CollisionData[Idx]._Center.Y + CollisionData[Idx]._Extent.Y ) )
-				{
-					ColideBelowFeet = true;
-					break;
-				}
-			}
-		}
-				
-		if( !Collided )
-		{
-			mLocation = DesiredDestination;
-		}
-		else if( ColideBelowFeet )
-		{
-			mCurrentPhysics = PHYS_Walking;
-			mVelocity.X = 0;
-			mVelocity.Y = 0;
-		}
-		else
-		{
-			AARB& ClosestCollision = CollisionData[ClosestIdx];
-			Vector2 CurrentCenter = ClosestCollision._Center;
-
-			Vector2 CenterToLocation = mLocation - CurrentCenter;
-			CenterToLocation.Normalize();
-
-			static const Vector2 Up( 0.0f, -1.0f );
-			static const Vector2 Right( 1.0f, 0.0f );
-			static const Vector2 Down( 0.0f, 1.0f );
-			static const Vector2 Left( -1.0f, 0.0f );
-
-			Vector2 HitNormal;
-			// Collision from top
-			if( CenterToLocation.Dot( Up ) > 0 )
-			{
-				HitNormal = Up;
-			}
-			else if( CenterToLocation.Dot( Right ) > 0 )
-			{
-				HitNormal = Right;
-			}
-			else if( CenterToLocation.Dot( Left ) > 0 )
-			{
-				HitNormal = Left;
-			}
-			else
-			{
-				HitNormal = Down;
-			}
-
-			// Don't move in the direction of the normal, just slide across the surface
-			Vector2 MoveVect = DesiredDestination - mLocation;
-			MoveVect += MoveVect.Dot( HitNormal ) * -HitNormal;
-
-			mLocation += MoveVect;
-
-			// Remove the velocity in the direction of the hit normal
-			mVelocity += mVelocity.Dot( HitNormal ) * -HitNormal;			
-		}
-	}
-
-	void DrawAARB( const AARB& A, DWORD Color )
-	{
-		// Top line
-		g_Hge->Gfx_RenderLine( A._Center.X - A._Extent.X, A._Center.Y - A._Extent.Y, 
-			A._Center.X + A._Extent.X, A._Center.Y - A._Extent.Y,
-			Color );
-		// Right line
-		g_Hge->Gfx_RenderLine( A._Center.X + A._Extent.X, A._Center.Y - A._Extent.Y, 
-			A._Center.X + A._Extent.X, A._Center.Y + A._Extent.Y,
-			Color );
-
-		// Bottom line
-		g_Hge->Gfx_RenderLine( A._Center.X + A._Extent.X, A._Center.Y + A._Extent.Y, 
-			A._Center.X - A._Extent.X, A._Center.Y + A._Extent.Y,
-			Color );
-
-		// Left line
-		g_Hge->Gfx_RenderLine( A._Center.X - A._Extent.X, A._Center.Y + A._Extent.Y, 
-			A._Center.X - A._Extent.X, A._Center.Y - A._Extent.Y,
-			Color );
 	}
 
 	void Cat::Render()
@@ -281,11 +134,6 @@ namespace Scribble
 		if( mSprite != NULL )
 		{
 			mSprite->Render( mLocation.X, mLocation.Y );
-
-			//DrawAARB( OL, 0xffff0000 );
-			DrawAARB( DL, 0xff00ff00 );
-			DrawAARB( CollidingBlock, 0xffff0000 );
-			DrawAARB( FeetCol, 0xff0000ff );
 		}
 	}
 }

@@ -131,7 +131,6 @@
     <ClInclude Include="PhysicsTypes.h" />
     <ClInclude Include="Actor.h" />
     <ClInclude Include="array_functions.h" />
-    <ClInclude Include="Body.h" />
     <ClInclude Include="Cat.h" />
     <ClInclude Include="MenuButton.h" />
     <ClInclude Include="PhysicsWorld.h" />

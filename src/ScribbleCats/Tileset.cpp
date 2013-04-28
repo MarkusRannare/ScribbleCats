@@ -3,6 +3,9 @@
 #include "array_functions.h"
 #include <hge/hgesprite.h>
 #include "Vector2.h"
+#include "World.h"
+#include "PhysicsWorld.h"
+#include "PhysicsTypes.h"
 
 using namespace foundation;
 
@@ -21,7 +24,6 @@ namespace Scribble
 		for( size_t I = 0; I < array::size( mLayers ); ++I )
 		{
 			memory_globals::default_allocator().deallocate( mLayers[I].TileData );
-			memory_globals::default_allocator().deallocate( mLayers[I].CollisionData );
 		}
 
 		MAKE_DELETE( memory_globals::default_allocator(), hgeSprite, mSprite );
@@ -43,16 +45,8 @@ namespace Scribble
 
 	void Tileset::CalculateCollisionData( int NumTilesX, int NumTilesY, short* TileData, TileLayer& Layer )
 	{
-		// If we already have collision data, Zero-it and start over
-		if( Layer.CollisionData )
-		{
-			memory_globals::default_allocator().deallocate( Layer.CollisionData );
-			Layer.NumCollisionEntries = 0;
-		}
-
-		// This should be changed as it might become quite big buffer if we increase the level size
-		// it is already ~156.25kb on a 100*100 tileset
-		AARB* TempCollisionData = (AARB*)memory_globals::default_scratch_allocator().allocate( NumTilesX * NumTilesY * sizeof(AARB) );
+		extern World* g_World;
+		PhysicsWorld* PhysicsWorld = g_World->GetPhysicsWorld();
 		for( int Y = 0; Y < NumTilesY; ++Y )
 		{
 			for( int X = 0; X < NumTilesX; ++X )
@@ -61,28 +55,17 @@ namespace Scribble
 				short TileId = GetTileId( TileData[X+Y*NumTilesX] );
 				if( TileId >= 0 )
 				{
-					AARB& Collision = TempCollisionData[Layer.NumCollisionEntries++];
+					Body NewBody;
+					NewBody._UserPointer = NULL;
+					AARB& Collision = NewBody._Collision;
+
 					Collision._Center = Vector2( X * mTileWidth + mTileWidth / 2.0f, Y * mTileWidth + mTileWidth / 2.0f );
 					Collision._Extent = Vector2( mTileWidth / 2.0f, mTileWidth / 2.0f );
-					/*Collision.Set( 
-						X * mTileWidth,					// x1
-						Y * mTileWidth,					// y1
-						X * mTileWidth + mTileWidth,	// x2
-						Y * mTileWidth + mTileWidth );	// y2*/
+
+					PhysicsWorld->AddBody( NewBody );
 				}
 			}
 		}
-
-		Layer.CollisionData = (AARB*)memory_globals::default_allocator().allocate( Layer.NumCollisionEntries * sizeof(AARB) );
-		memcpy_s( Layer.CollisionData, Layer.NumCollisionEntries * sizeof(AARB), TempCollisionData, Layer.NumCollisionEntries * sizeof(AARB) );
-		memory_globals::default_scratch_allocator().deallocate( TempCollisionData );
-	}
-
-	AARB* Tileset::GetCollisionForLayer( int Layer, int& out_NumCollisions )
-	{
-		out_NumCollisions = mLayers[Layer].NumCollisionEntries;
-
-		return mLayers[Layer].CollisionData;
 	}
 
 	void Tileset::Tick( float CenterX, float CenterY )

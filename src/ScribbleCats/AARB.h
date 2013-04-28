@@ -7,18 +7,18 @@ namespace Scribble
 {
 	namespace aarb
 	{
-		void CreateBox( const Vector2& FromLocation, float Width, AARB& out_AARB );
+		inline void CreateBox( const Vector2& FromLocation, float Width, AARB& out_AARB );
 
-		bool Intersects( const AARB& A, const AARB& B );
+		inline bool Intersects( const AARB& A, const AARB& B );
 
 		inline float Max( const AARB& A, int Idx );
 		inline float Min( const AARB& A, int Idx );
 
-		float MinX( const AARB& A );
-		float MaxX( const AARB& A );
+		inline float MinX( const AARB& A );
+		inline float MaxX( const AARB& A );
 
-		float MinY( const AARB& A );
-		float MaxY( const AARB& A );
+		inline float MinY( const AARB& A );
+		inline float MaxY( const AARB& A );
 	}
 
 	namespace aarb
@@ -32,11 +32,11 @@ namespace Scribble
 
 		bool Intersects( const AARB& A, const AARB& B )
 		{
-			if( abs( A._Center.X - B._Center.X ) > ( A._Extent.X + B._Extent.X ) )
+			if( abs( A._Center.X - B._Center.X ) >= ( A._Extent.X + B._Extent.X ) )
 			{
 				return false;
 			}
-			if( abs( A._Center.Y - B._Center.Y ) > ( A._Extent.Y + B._Extent.Y ) )
+			if( abs( A._Center.Y - B._Center.Y ) >= ( A._Extent.Y + B._Extent.Y ) )
 			{
 				return false;
 			}
@@ -46,17 +46,35 @@ namespace Scribble
 
 		float Max( const AARB& A, int Idx )
 		{
+			assert( Idx >= 0 && Idx < 2 );
+			return A._Center[ Idx ] + A._Extent[ Idx ];
 		}
 
 		float Min( const AARB& A, int Idx )
 		{
+			assert( Idx >= 0 && Idx < 2 );
+			return A._Center[ Idx ] - A._Extent[ Idx ];
 		}
 
-		float MinX( const AARB& A );
-		float MaxX( const AARB& A );
+		float MinX( const AARB& A )
+		{
+			return A._Center.X - A._Extent.X;
+		}
 
-		float MinY( const AARB& A );
-		float MaxY( const AARB& A );
+		float MaxX( const AARB& A )
+		{
+			return A._Center.X + A._Extent.X;
+		}
+
+		float MinY( const AARB& A )
+		{
+			return A._Center.Y - A._Extent.Y;
+		}
+
+		float MaxY( const AARB& A )
+		{
+			return A._Center.Y + A._Extent.Y;
+		}
 	}
 }
 

@@ -10,31 +10,24 @@ namespace Scribble
 	class Cat : public Actor
 	{
 		public:
-			enum EPhysics
-			{
-				PHYS_Falling,
-				PHYS_Walking
-			};
-		public:
 			Cat( Vector2 Location );
 			virtual ~Cat();
 
-			void SimulatePhysics( float Dt );
-
 			virtual void Tick( float Dt );
 			virtual void Render();
+
+			virtual void Landed( const CollisionData& CollisionInfo );
 		protected:
-			virtual void PhysFalling( float Dt );
+			virtual void SimulatePhysics( float Dt );
 			virtual void PhysWalking( float Dt );
+			virtual void PhysFalling( float Dt );
 		private:
 			Cat(); // -no default constructor
+			friend class World;
 		private:
 			Vector2 mAcceleration;
-			Vector2 mVelocity;
 
 			hgeSprite* mSprite;
-
-			EPhysics mCurrentPhysics;
 			
 			bool mUpHold;
 			bool mRightHold;

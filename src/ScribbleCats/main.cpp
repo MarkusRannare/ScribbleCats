@@ -19,6 +19,8 @@ Tileset* g_Tileset = NULL;
 World* g_World = NULL;
 hgeFont* g_Font = NULL;
 
+bool g_DebugRenderPhysics = true;
+
 bool FrameFunc();
 bool RenderFunc();
 
@@ -85,6 +87,11 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 bool FrameFunc()
 {
 	float DeltaTime = g_Hge->Timer_GetDelta();
+
+	if( g_Hge->Input_KeyDown( HGEK_P ) )
+	{
+		g_DebugRenderPhysics = !g_DebugRenderPhysics;
+	}
 
 	g_World->Tick( DeltaTime );
 	g_Tileset->Tick( 1280/2, 720/2 );
