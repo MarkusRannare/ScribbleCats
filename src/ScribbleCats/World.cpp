@@ -147,6 +147,7 @@ namespace Scribble
 			if( !Result )
 			{
 				Actor->mLocation = TargetLocation;
+				Actor->mCollision._Center = TargetLocation;
 				return HitSomething;
 			}
 			else
@@ -176,6 +177,8 @@ namespace Scribble
 				}
 			}
 		}
+
+		Actor->mCollision._Center = Actor->mLocation;
 
 		return HitSomething;
 	}

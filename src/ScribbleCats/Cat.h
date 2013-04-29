@@ -3,7 +3,7 @@
 
 #include "Actor.h"
 
-#include <hge/hgesprite.h>
+#include <hge/hgeanim.h>
 
 namespace Scribble
 {
@@ -27,7 +27,10 @@ namespace Scribble
 		private:
 			Vector2 mAcceleration;
 
-			hgeSprite* mSprite;
+			hgeAnimation* mWalkLeft;
+			hgeAnimation* mWalkRight;
+
+			hgeAnimation* mCurrentAnim;
 			
 			bool mUpHold;
 			bool mRightHold;

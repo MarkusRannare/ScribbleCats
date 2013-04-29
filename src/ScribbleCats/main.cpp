@@ -18,6 +18,7 @@ HGE* g_Hge = NULL;
 Tileset* g_Tileset = NULL;
 World* g_World = NULL;
 hgeFont* g_Font = NULL;
+hgeResourceManager* g_ResManager = NULL;
 
 bool g_DebugRenderPhysics = true;
 
@@ -56,11 +57,13 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 
 	if(g_Hge->System_Initiate())
 	{
+		g_ResManager = MAKE_NEW( memory_globals::default_allocator(), hgeResourceManager, "../Media/Resources.res" );
+
 		g_Font = MAKE_NEW( memory_globals::default_allocator(), hgeFont, "../Media/Fonts/font1.fnt" );
 
 		g_World = MAKE_NEW( memory_globals::default_allocator(), World );
 		g_Tileset = MAKE_NEW( memory_globals::default_allocator(), Tileset, 32, 0, 0 );
-		g_Cat = g_World->Spawn<Cat>( Vector2( 200, 100 ) );
+		g_Cat = g_World->Spawn<Cat>( Vector2( 200, 50 ) );
 		g_Tileset->AddLayer( 100, 100, LoadTileLayer( "CollisionTest.MAR" ), g_Hge->Texture_Load( "../Media/Textures/Tileset.png" ) ); 
 
 		g_Hge->System_Start();
@@ -76,6 +79,7 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 	MAKE_DELETE( memory_globals::default_allocator(), hgeFont, g_Font );
 	MAKE_DELETE( memory_globals::default_allocator(), World, g_World );
 	MAKE_DELETE( memory_globals::default_allocator(), Tileset, g_Tileset );
+	MAKE_DELETE( memory_globals::default_allocator(), hgeResourceManager, g_ResManager );
 
 	g_Hge->Release();
 

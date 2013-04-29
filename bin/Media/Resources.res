@@ -1,0 +1,1 @@
+Texture PlayerTex{	filename="../Media/Textures/Player.png"}Animation PlayerBase{	texture=PlayerTex	rect=0,0,256,256	frames=2	fps=4	mode=FORWARD,LOOP	hotspot=128,128}Animation Player.WalkRight : PlayerBase{	flip=false,false}Animation Player.WalkLeft : PlayerBase{	flip=true,false}

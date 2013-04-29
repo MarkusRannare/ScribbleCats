@@ -7,8 +7,10 @@
 
 #include "AARB.h"
 #include "PhysicsWorld.h"
+#include <hge/hgeresource.h>
 
 extern HGE* g_Hge;
+extern hgeResourceManager* g_ResManager;
 
 using namespace foundation;
 
@@ -18,18 +20,22 @@ namespace Scribble
 		Actor( Location ),
 		mAcceleration( 0, 0 )
 	{
-		mSprite = MAKE_NEW( memory_globals::default_allocator(), hgeSprite, NULL, Location.X, Location.Y, 20, 20 );
-		mSprite->SetHotSpot( 10, 10 );
+		mWalkLeft = g_ResManager->GetAnimation( "Player.WalkLeft" );
+		mWalkRight = g_ResManager->GetAnimation( "Player.WalkRight" );
 
+		mWalkLeft->Play();
+		mWalkRight->Play();
+
+		mCurrentAnim = mWalkRight;
+		
 		mCollision._Center = mLocation;
-		mCollision._Extent = Vector2( 10, 10 );
+		mCollision._Extent = Vector2( 30, 32 );
 
 		mCurrentPhysics = PHYS_Falling;
 	}
 
 	Cat::~Cat()
 	{
-		MAKE_DELETE( memory_globals::default_allocator(), hgeSprite, mSprite );
 	}
 
 	void Cat::Tick( float Dt )
@@ -42,6 +48,9 @@ namespace Scribble
 		mJumpPressed = g_Hge->Input_KeyDown( HGEK_SPACE );
 	
 		Actor::Tick( Dt );
+
+		mWalkLeft->Update( Dt );
+		mWalkRight->Update( Dt );
 	}
 
 	void Cat::SimulatePhysics( float Dt )
@@ -112,10 +121,12 @@ namespace Scribble
 		if( mRightHold )
 		{
 			MoveDirection.X = 1;
+			mCurrentAnim = mWalkRight;
 		}
 		if( mLeftHold )
 		{
 			MoveDirection.X = -1;
+			mCurrentAnim = mWalkLeft;
 		}
 
 		mVelocity = MoveDirection * 150.0f;
@@ -131,9 +142,14 @@ namespace Scribble
 
 	void Cat::Render()
 	{
-		if( mSprite != NULL )
+		if( mCurrentAnim != NULL )
 		{
-			mSprite->Render( mLocation.X, mLocation.Y );
+			mCurrentAnim->RenderEx( mLocation.X, mLocation.Y, 0, 0.25f, 0.25f );
+		}
+		extern bool g_DebugRenderPhysics;
+		if( g_DebugRenderPhysics )
+		{
+			DrawAARB( mCollision, 0xffffff00 );
 		}
 	}
 }
