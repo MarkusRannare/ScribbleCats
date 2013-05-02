@@ -71,12 +71,16 @@ namespace Scribble
 		out_CollisionData->FirstContact = 1.01f;
 		bool DidCollide = false;
 
+		Vector2 Velocity = ToLocation - FromLocation;
+
 		for( size_t Idx = 0; Idx < array::size( mBodies ); ++Idx )
 		{
 			CollisionData TempCollisionData;
 			if( AARBToAARBSweep( FromLocation, ToLocation, Extent, mBodies[Idx]._Collision, &TempCollisionData ) )
 			{
-				if( TempCollisionData.FirstContact < out_CollisionData->FirstContact )
+				// Make sure we don't register AARB's that are sliding along each other as colliding
+				bool SlidingAlongAARB = Velocity.Dot( TempCollisionData._Normal ) == 0;
+				if( !SlidingAlongAARB && TempCollisionData.FirstContact < out_CollisionData->FirstContact )
 				{
 					*out_CollisionData = TempCollisionData;
 					DidCollide = true;
