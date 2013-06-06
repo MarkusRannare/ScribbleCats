@@ -96,7 +96,7 @@ namespace Scribble
 		TargetLocation._Center = ToLocation;
 		TargetLocation._Extent = Actor->mCollision._Extent;
 
-		if( mPhysicsWorld->IsSpaceFree( TargetLocation ) )
+		if( mPhysicsWorld->IsSpaceFree( TargetLocation * TO_PHYSICS ) )
 		{
 			Actor->mLocation = ToLocation;
 
@@ -142,13 +142,13 @@ namespace Scribble
 		{
 			CollisionData CollisionInfo;
 
-			bool Result = mPhysicsWorld->SweepAARB( Actor->mLocation, TargetLocation, Actor->mCollision._Extent, &CollisionInfo );
+			bool Result = mPhysicsWorld->SweepAARB( Actor->mLocation * TO_PHYSICS, TargetLocation * TO_PHYSICS, Actor->mCollision._Extent * TO_PHYSICS, &CollisionInfo );
 		
 			if( !Result )
 			{
 				Actor->mLocation = TargetLocation;
-				Actor->mCollision._Center = TargetLocation;
-				return HitSomething;
+				
+				break;
 			}
 			else
 			{

@@ -8,6 +8,8 @@
 namespace Scribble
 {
 	const float SMALL_NUMBER = 0.00001f;
+	const float TO_PHYSICS = 0.03125f;
+	const float TO_WORLD = 32.0f;
 
 	class Shape;
 	struct Body;

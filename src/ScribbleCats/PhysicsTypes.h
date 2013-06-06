@@ -14,6 +14,8 @@ namespace Scribble
 		inline bool operator==( const AARB& Other ) const;
 		inline bool operator!=( const AARB& Other ) const;		
 
+		inline AARB operator*( float S ) const;
+
 		Vector2 _Center;
 		Vector2 _Extent;
 	};
@@ -30,6 +32,7 @@ namespace Scribble
 	struct CollisionData
 	{
 		Vector2 _Normal;
+		float SurfaceArea;
 		float FirstContact;
 		float LastContact;
 	};
@@ -63,6 +66,11 @@ namespace Scribble
 	bool AARB::operator!=( const AARB& Other ) const
 	{
 		return _Center != Other._Center || _Extent != Other._Extent;
+	}
+
+	inline AARB AARB::operator*( float S ) const
+	{
+		return AARB( _Center * S, _Extent * S );
 	}
 
 	bool Body::operator==( const Body& Other ) const

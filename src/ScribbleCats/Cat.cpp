@@ -29,7 +29,7 @@ namespace Scribble
 		mCurrentAnim = mWalkRight;
 		
 		mCollision._Center = mLocation;
-		mCollision._Extent = Vector2( 30, 32 );
+		mCollision._Extent = Vector2( 28, 31 );
 
 		mCurrentPhysics = PHYS_Falling;
 	}
@@ -47,6 +47,12 @@ namespace Scribble
 
 		mJumpPressed = g_Hge->Input_KeyDown( HGEK_SPACE );
 	
+		if( g_Hge->Input_KeyDown( HGEK_E ) )
+		{
+			mLocation = Vector2( 200, 50 );
+			mVelocity = Vector2( 0, 0 );
+		}
+
 		Actor::Tick( Dt );
 
 		mWalkLeft->Update( Dt );
@@ -79,6 +85,12 @@ namespace Scribble
 
 		mVelocity += mAcceleration * Dt;
 
+
+		/*if( mJumpPressed )
+		{
+			mVelocity.Y -= 300.0f;
+		}*/
+
 		if( mRightHold )
 		{
 			mVelocity.X += 66.0f * Dt;
@@ -103,14 +115,6 @@ namespace Scribble
 
 	void Cat::PhysWalking( float Dt )
 	{
-		if( mJumpPressed )
-		{
-			mCurrentPhysics = PHYS_Falling;
-			mVelocity.Y -= 300.0f;
-
-			return;
-		}
-
 		Vector2 MoveDirection( 0, 0 );
 		mVelocity.X = 0;
 		mVelocity.Y = 0;
@@ -127,6 +131,17 @@ namespace Scribble
 		{
 			MoveDirection.X = -1;
 			mCurrentAnim = mWalkLeft;
+		}
+
+		if( mJumpPressed )
+		{
+			mVelocity.Y -= 300.0f;
+			mVelocity.X = MoveDirection.X * 150.0f;
+
+			mCurrentPhysics = PHYS_Falling;
+			SimulatePhysics( Dt );
+
+			return;
 		}
 
 		mVelocity = MoveDirection * 150.0f;

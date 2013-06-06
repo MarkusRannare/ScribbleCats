@@ -49,7 +49,7 @@ namespace Scribble
 	{
 		for( size_t Idx = 0; Idx < array::size( mBodies ); ++Idx )
 		{
-			DrawAARB( mBodies[Idx]._Collision, 0xffcccccc );
+			DrawAARB( mBodies[Idx]._Collision * TO_WORLD, 0xffcccccc );
 		}
 	}
 
@@ -69,6 +69,7 @@ namespace Scribble
 	bool PhysicsWorld::SweepAARB( const Vector2& FromLocation, const Vector2& ToLocation, const Vector2& Extent, CollisionData* out_CollisionData )
 	{
 		out_CollisionData->FirstContact = 1.01f;
+		//out_CollisionData->SurfaceArea = SMALL_NUMBER;
 		bool DidCollide = false;
 
 		Vector2 Velocity = ToLocation - FromLocation;
@@ -80,7 +81,11 @@ namespace Scribble
 			{
 				// Make sure we don't register AARB's that are sliding along each other as colliding
 				bool SlidingAlongAARB = Velocity.Dot( TempCollisionData._Normal ) == 0;
-				if( !SlidingAlongAARB && TempCollisionData.FirstContact < out_CollisionData->FirstContact )
+				if( ( !SlidingAlongAARB && TempCollisionData.SurfaceArea > SMALL_NUMBER ) &&
+					( TempCollisionData.FirstContact < out_CollisionData->FirstContact ||
+						( TempCollisionData.FirstContact < out_CollisionData->FirstContact + SMALL_NUMBER && 
+						TempCollisionData.SurfaceArea > out_CollisionData->SurfaceArea ) )
+					)
 				{
 					*out_CollisionData = TempCollisionData;
 					DidCollide = true;
@@ -112,7 +117,8 @@ namespace Scribble
 		if( aarb::Intersects( SourceState, StaticAARB ) )
 		{
 			out_CollisionData->FirstContact = out_CollisionData->LastContact = 0;
-			out_CollisionData->_Normal = Vector2::UP;
+			out_CollisionData->_Normal = Vector2::Normalize( FromLocation - ToLocation );
+			//out_CollisionData->_Normal = Vector2::Normalize( FromLocation - ToLocation );
 
 			return true;
 		}
@@ -152,6 +158,8 @@ namespace Scribble
 			// If the contact is to the left of the Static AARB
 			if( aarb::MaxX( Contact ) <= aarb::MinX( StaticAARB ) )
 			{
+				out_CollisionData->SurfaceArea = min( aarb::MaxY( StaticAARB ), ToLocation.Y + Extent.Y ) - max( aarb::MinY( StaticAARB ), ToLocation.Y - Extent.Y );
+
 				// Does the collision lie in the top vertex voronoi region
 				if( aarb::MaxY( Contact ) < aarb::MinY( StaticAARB ) )
 				{
@@ -171,6 +179,8 @@ namespace Scribble
 			// If the contact is to the right of the Static AARB
 			else if( aarb::MinX( Contact ) >= aarb::MaxX( StaticAARB ) )
 			{
+				out_CollisionData->SurfaceArea = min( aarb::MaxY( StaticAARB ), ToLocation.Y + Extent.Y ) - max( aarb::MinY( StaticAARB ), ToLocation.Y - Extent.Y );
+
 				// Does the collision lie in the top vertex voronoi region
 				if( aarb::MaxY( Contact ) < aarb::MinY( StaticAARB ) )
 				{
@@ -190,6 +200,7 @@ namespace Scribble
 			// The contact lies above or below the AARB
 			else
 			{
+				out_CollisionData->SurfaceArea = min( aarb::MaxX( StaticAARB ), ToLocation.X + Extent.X ) - max( aarb::MinX( StaticAARB ), ToLocation.X - Extent.X );
 				// Is it above the box 
 				if( aarb::MaxY( Contact ) <= aarb::MinY( StaticAARB ) )
 				{

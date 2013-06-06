@@ -20,7 +20,7 @@ World* g_World = NULL;
 hgeFont* g_Font = NULL;
 hgeResourceManager* g_ResManager = NULL;
 
-bool g_DebugRenderPhysics = true;
+bool g_DebugRenderPhysics = false;
 
 bool FrameFunc();
 bool RenderFunc();
@@ -64,7 +64,7 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 		g_World = MAKE_NEW( memory_globals::default_allocator(), World );
 		g_Tileset = MAKE_NEW( memory_globals::default_allocator(), Tileset, 32, 0, 0 );
 		g_Cat = g_World->Spawn<Cat>( Vector2( 200, 50 ) );
-		g_Tileset->AddLayer( 100, 100, LoadTileLayer( "CollisionTest.MAR" ), g_Hge->Texture_Load( "../Media/Textures/Tileset.png" ) ); 
+		g_Tileset->AddLayer( 100, 100, LoadTileLayer( "ArtTest.MAR" ), g_Hge->Texture_Load( "../Media/Textures/Tileset.png" ) ); 
 
 		g_Hge->System_Start();
 	}
@@ -95,6 +95,11 @@ bool FrameFunc()
 	if( g_Hge->Input_KeyDown( HGEK_P ) )
 	{
 		g_DebugRenderPhysics = !g_DebugRenderPhysics;
+	}
+	if( g_Hge->Input_KeyDown( HGEK_R ) )
+	{
+		g_Hge->Texture_Free( g_Tileset->mLayers[0].SourceTexture );
+		 g_Tileset->mLayers[0].SourceTexture = g_Hge->Texture_Load( "../Media/Textures/Tileset.png" );
 	}
 
 	g_World->Tick( DeltaTime );

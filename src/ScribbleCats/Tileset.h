@@ -40,7 +40,7 @@ namespace Scribble
 			void CalculateCollisionData( int NumTilesX, int NumTilesY, short* TileData, TileLayer& Layer );
 		private:
 			Tileset(); // No default constructor
-		private:
+		public:
 			foundation::Array< TileLayer > mLayers;
 			float mTileWidth;
 			hgeSprite* mSprite;

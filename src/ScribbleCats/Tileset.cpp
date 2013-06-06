@@ -59,8 +59,8 @@ namespace Scribble
 					NewBody._UserPointer = NULL;
 					AARB& Collision = NewBody._Collision;
 
-					Collision._Center = Vector2( X * mTileWidth + mTileWidth / 2.0f, Y * mTileWidth + mTileWidth / 2.0f );
-					Collision._Extent = Vector2( mTileWidth / 2.0f, mTileWidth / 2.0f );
+					Collision._Center = Vector2( X * mTileWidth + mTileWidth / 2.0f, Y * mTileWidth + mTileWidth / 2.0f ) * TO_PHYSICS;
+					Collision._Extent = Vector2( mTileWidth / 2.0f, mTileWidth / 2.0f ) * TO_PHYSICS;
 
 					PhysicsWorld->AddBody( NewBody );
 				}
