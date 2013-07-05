@@ -46,7 +46,7 @@ namespace Scribble
 	void Tileset::CalculateCollisionData( int NumTilesX, int NumTilesY, short* TileData, TileLayer& Layer )
 	{
 		extern World* g_World;
-		PhysicsWorld* PhysicsWorld = g_World->GetPhysicsWorld();
+		b2World& PhysicsWorld = g_World->GetPhysicsWorld();
 		for( int Y = 0; Y < NumTilesY; ++Y )
 		{
 			for( int X = 0; X < NumTilesX; ++X )
@@ -55,14 +55,16 @@ namespace Scribble
 				short TileId = GetTileId( TileData[X+Y*NumTilesX] );
 				if( TileId >= 0 )
 				{
-					Body NewBody;
-					NewBody._UserPointer = NULL;
-					AARB& Collision = NewBody._Collision;
+					b2BodyDef TileBodyDef;
+					TileBodyDef.position.Set( ( X * mTileWidth + mTileWidth / 2.0f ) * TO_PHYSICS, ( Y * mTileWidth + mTileWidth / 2.0f ) * TO_PHYSICS ); 
+					TileBodyDef.type = b2_staticBody;
 
-					Collision._Center = Vector2( X * mTileWidth + mTileWidth / 2.0f, Y * mTileWidth + mTileWidth / 2.0f ) * TO_PHYSICS;
-					Collision._Extent = Vector2( mTileWidth / 2.0f, mTileWidth / 2.0f ) * TO_PHYSICS;
+					b2Body* TileBody = PhysicsWorld.CreateBody( &TileBodyDef );
 
-					PhysicsWorld->AddBody( NewBody );
+					b2PolygonShape TileBox;
+					TileBox.SetAsBox( mTileWidth / 2.0f * TO_PHYSICS, mTileWidth / 2.0f * TO_PHYSICS );
+
+					TileBody->CreateFixture( &TileBox, 0.0f );
 				}
 			}
 		}

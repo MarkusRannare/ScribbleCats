@@ -20,7 +20,7 @@ World* g_World = NULL;
 hgeFont* g_Font = NULL;
 hgeResourceManager* g_ResManager = NULL;
 
-bool g_DebugRenderPhysics = false;
+bool g_DebugRenderPhysics = true;
 
 bool FrameFunc();
 bool RenderFunc();

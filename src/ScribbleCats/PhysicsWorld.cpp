@@ -1,5 +1,5 @@
 #include "PhysicsWorld.h"
-#include "Body.h"
+/*#include "Body.h"
 
 #include "foundation/memory.h"
 #include "array_functions.h"
@@ -242,4 +242,4 @@ namespace Scribble
 			A._Center.X - A._Extent.X, A._Center.Y - A._Extent.Y,
 			Color );
 	}
-}
+}*/

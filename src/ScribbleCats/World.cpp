@@ -2,6 +2,7 @@
 
 #include "array_functions.h"
 #include "PhysicsWorld.h"
+#include "Box2DDebugDraw.h"
 
 extern bool g_DebugRenderPhysics;
 
@@ -15,13 +16,16 @@ namespace Scribble
 		mActors( memory_globals::default_allocator() ),
 		mDeadActors( memory_globals::default_allocator() ),
 		mNewActors( memory_globals::default_allocator() ),
-		mPhysicsWorld( MAKE_NEW( memory_globals::default_allocator(), PhysicsWorld ) )
+		mPhysicsWorld( b2Vec2( 0.0f, -10.0f ) )
+		//mPhysicsWorld(  )
 	{
+		mDebugPhysics = MAKE_NEW( memory_globals::default_allocator(), Box2DDebugDraw );
+		mPhysicsWorld.SetDebugDraw( mDebugPhysics );
 	}
 
 	World::~World()
 	{
-		MAKE_DELETE( memory_globals::default_allocator(), PhysicsWorld, mPhysicsWorld );
+		MAKE_DELETE( memory_globals::default_allocator(), b2Draw, mDebugPhysics );
 	}
 
 	void World::Destroy( Actor* Actor )
@@ -31,6 +35,19 @@ namespace Scribble
 
 	void World::Tick( float Dt )
 	{
+		const int32 VELOCITY_ITERATIONS = 6;
+		const int32 POSITION_ITERATIONS = 2;
+		const float LARGEST_TIMESTEP = 1.0f / 60.0f;
+	
+		// Let the physics work @ 60Hz or faster
+		float TimestepLeft = Dt;
+		do 
+		{
+			float CurrentTimestep = min( TimestepLeft, LARGEST_TIMESTEP );
+			mPhysicsWorld.Step( CurrentTimestep, VELOCITY_ITERATIONS, POSITION_ITERATIONS );
+			TimestepLeft =- CurrentTimestep;
+		} while ( TimestepLeft > 0.0f );
+
 		for( size_t Idx = 0; Idx < array::size( mActors ); ++Idx )
 		{
 			mActors[Idx]->Tick( Dt );
@@ -81,11 +98,13 @@ namespace Scribble
 
 		if( g_DebugRenderPhysics )
 		{
-			mPhysicsWorld->DebugRender();
+			mDebugPhysics->ClearFlags( 0xffffffff );
+			mDebugPhysics->AppendFlags( b2Draw::e_shapeBit );
+			mPhysicsWorld.DrawDebugData();
 		}
 	}
 
-	PhysicsWorld* World::GetPhysicsWorld() const
+	b2World& World::GetPhysicsWorld()
 	{
 		return mPhysicsWorld;
 	}
@@ -96,12 +115,12 @@ namespace Scribble
 		TargetLocation._Center = ToLocation;
 		TargetLocation._Extent = Actor->mCollision._Extent;
 
-		if( mPhysicsWorld->IsSpaceFree( TargetLocation * TO_PHYSICS ) )
+		/*if( mPhysicsWorld->IsSpaceFree( TargetLocation * TO_PHYSICS ) )
 		{
 			Actor->mLocation = ToLocation;
 
 			return true;
-		}
+		}*/
 
 		return false;
 	}
@@ -129,7 +148,7 @@ namespace Scribble
 
 	bool World::MoveActor( Actor* Actor, const Vector2& ToLocation )
 	{
-		bool HitSomething = false;
+		/*bool HitSomething = false;
 		Vector2 TargetLocation = ToLocation;
 		float TimesliceLeft = 1.0f;
 
@@ -180,6 +199,7 @@ namespace Scribble
 
 		Actor->mCollision._Center = Actor->mLocation;
 
-		return HitSomething;
+		return HitSomething;*/
+		return false;
 	}
 }

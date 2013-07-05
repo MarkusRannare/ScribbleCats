@@ -4,10 +4,14 @@
 #include "Actor.h"
 #include <assert.h>
 #include "foundation/array.h"
+#include <box2d/Box2D.h>
 
 namespace Scribble
 {
-	class PhysicsWorld;
+	//class PhysicsWorld;
+
+	const float TO_PHYSICS = 0.015625f;
+	const float TO_WORLD = 64.0f;
 
 	class World
 	{
@@ -37,7 +41,7 @@ namespace Scribble
 			virtual void Tick( float Dt );
 			virtual void Render();
 
-			PhysicsWorld* GetPhysicsWorld() const;
+			b2World& GetPhysicsWorld();
 
 			bool SetActorLocation( Actor* Actor, const Vector2& ToLocation );
 			bool MoveActor( Actor* Actor, const Vector2& ToLocation );
@@ -48,7 +52,9 @@ namespace Scribble
 				float TimesliceRemaining, 
 				Vector2& out_NewWantedLocation );
 		private:
-			PhysicsWorld* mPhysicsWorld;
+			//PhysicsWorld* mPhysicsWorld;
+			b2World mPhysicsWorld;
+			b2Draw* mDebugPhysics;
 
 			foundation::Array<Actor*> mActors;
 			foundation::Array<Actor*> mNewActors;

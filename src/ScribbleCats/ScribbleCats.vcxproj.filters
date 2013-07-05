@@ -66,6 +66,9 @@
     <ClCompile Include="Vector2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Box2DDebugDraw.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MenuButton.h">
@@ -133,6 +136,9 @@
     </ClInclude>
     <ClInclude Include="Vector2.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Box2DDebugDraw.h">
+      <Filter>Header Files\Phisics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

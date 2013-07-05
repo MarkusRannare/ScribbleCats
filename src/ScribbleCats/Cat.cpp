@@ -161,10 +161,10 @@ namespace Scribble
 		{
 			mCurrentAnim->RenderEx( mLocation.X, mLocation.Y, 0, 0.25f, 0.25f );
 		}
-		extern bool g_DebugRenderPhysics;
+		/*extern bool g_DebugRenderPhysics;
 		if( g_DebugRenderPhysics )
 		{
 			DrawAARB( mCollision, 0xffffff00 );
-		}
+		}*/
 	}
 }

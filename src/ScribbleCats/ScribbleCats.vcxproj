@@ -68,7 +68,7 @@
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>hge.lib;hgehelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hge.lib;hgehelp.lib;Box2D_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)../libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -91,7 +91,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>hge.lib;hgehelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hge.lib;hgehelp.lib;Box2D.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)../libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -106,6 +106,7 @@
     <ClCompile Include="..\foundation\murmur_hash.cpp" />
     <ClCompile Include="..\foundation\string_stream.cpp" />
     <ClCompile Include="Actor.cpp" />
+    <ClCompile Include="Box2DDebugDraw.cpp" />
     <ClCompile Include="Cat.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MenuButton.cpp" />
@@ -128,6 +129,7 @@
     <ClInclude Include="..\foundation\temp_allocator.h" />
     <ClInclude Include="..\foundation\types.h" />
     <ClInclude Include="AARB.h" />
+    <ClInclude Include="Box2DDebugDraw.h" />
     <ClInclude Include="PhysicsTypes.h" />
     <ClInclude Include="Actor.h" />
     <ClInclude Include="array_functions.h" />
