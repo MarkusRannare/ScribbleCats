@@ -16,8 +16,8 @@ namespace Scribble
 		mActors( memory_globals::default_allocator() ),
 		mDeadActors( memory_globals::default_allocator() ),
 		mNewActors( memory_globals::default_allocator() ),
-		mPhysicsWorld( b2Vec2( 0.0f, -10.0f ) )
-		//mPhysicsWorld(  )
+		mPhysicsWorld( b2Vec2( 0.0f, 10.0f ) ),
+		mComponents( memory_globals::default_allocator() )
 	{
 		mDebugPhysics = MAKE_NEW( memory_globals::default_allocator(), Box2DDebugDraw );
 		mPhysicsWorld.SetDebugDraw( mDebugPhysics );
@@ -72,6 +72,22 @@ namespace Scribble
 		HandleNewAndOldActors();
 	}
 
+	void World::ComponentAttached( Component* TheComponent )
+	{
+		if( array::find( mComponents, TheComponent ) == INDEX_NONE )
+		{
+			array::push_back( mComponents, TheComponent );
+		}
+	}
+
+	void World::ComponentDeattached( Component* TheComponent )
+	{
+		if( array::find( mComponents, TheComponent ) != INDEX_NONE )
+		{
+			array::remove_swap( mComponents, TheComponent );
+		}
+	}
+
 	void World::HandleNewAndOldActors()
 	{
 		for( size_t Idx = 0; Idx < array::size( mNewActors ); ++Idx )
@@ -111,19 +127,42 @@ namespace Scribble
 
 	bool World::SetActorLocation( Actor* Actor, const Vector2& ToLocation )
 	{
-		AARB TargetLocation;
-		TargetLocation._Center = ToLocation;
-		TargetLocation._Extent = Actor->mCollision._Extent;
+		class FreeSpaceCallback : public b2QueryCallback
+		{
+			public:
+				FreeSpaceCallback() :
+					mFoundAnyCollision( false )
+				{
+				}
 
-		/*if( mPhysicsWorld->IsSpaceFree( TargetLocation * TO_PHYSICS ) )
+				bool ReportFixture( b2Fixture* fixture )
+				{
+					mFoundAnyCollision = true;
+
+					return false;
+				}
+
+				bool mFoundAnyCollision;
+		};
+
+		b2AABB TargetLocation;
+		TargetLocation.lowerBound = VectorToB2( ( ToLocation - Actor->mCollision._Extent ) * TO_PHYSICS );
+		TargetLocation.upperBound = VectorToB2( ( ToLocation + Actor->mCollision._Extent ) * TO_PHYSICS );
+		
+		FreeSpaceCallback Callback;
+		mPhysicsWorld.QueryAABB( &Callback, TargetLocation );
+
+		if( !Callback.mFoundAnyCollision )
 		{
 			Actor->mLocation = ToLocation;
 
 			return true;
-		}*/
+		}
 
 		return false;
 	}
+
+
 
 	bool World::ResolveCollision( Actor* Actor, 
 		const Vector2& TargetLocation,
@@ -148,7 +187,13 @@ namespace Scribble
 
 	bool World::MoveActor( Actor* Actor, const Vector2& ToLocation )
 	{
-		/*bool HitSomething = false;
+		if( Actor->mPhysicsBody == NULL )
+		{
+			Actor->mLocation = ToLocation;
+			return false;
+		}
+
+		bool HitSomething = false;
 		Vector2 TargetLocation = ToLocation;
 		float TimesliceLeft = 1.0f;
 
@@ -161,9 +206,16 @@ namespace Scribble
 		{
 			CollisionData CollisionInfo;
 
-			bool Result = mPhysicsWorld->SweepAARB( Actor->mLocation * TO_PHYSICS, TargetLocation * TO_PHYSICS, Actor->mCollision._Extent * TO_PHYSICS, &CollisionInfo );
+			b2TOIInput Input;
+//			Input.proxyA
+
+			b2TOIOutput Output;
+			memset( &Output, 0, sizeof( b2TOIOutput ) );
+
+			b2TimeOfImpact( &Output, &Input );
+			//bool Result = mPhysicsWorld->SweepAARB( Actor->mLocation * TO_PHYSICS, TargetLocation * TO_PHYSICS, Actor->mCollision._Extent * TO_PHYSICS, &CollisionInfo );
 		
-			if( !Result )
+			if( Output.state == b2TOIOutput::e_separated )
 			{
 				Actor->mLocation = TargetLocation;
 				
@@ -199,7 +251,6 @@ namespace Scribble
 
 		Actor->mCollision._Center = Actor->mLocation;
 
-		return HitSomething;*/
-		return false;
+		return HitSomething;
 	}
 }

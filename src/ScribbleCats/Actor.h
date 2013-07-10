@@ -1,6 +1,8 @@
 #ifndef SCRIBBLE_ACTOR_H
 #define SCRIBBLE_ACTOR_H
 
+#include "foundation/collection_types.h"
+
 namespace Scribble
 {
 	class World;
@@ -9,9 +11,13 @@ namespace Scribble
 #include "PhysicsTypes.h"
 
 extern Scribble::World* g_World;
+class b2Body;
 
 namespace Scribble
 {
+	class Component;
+	class CollisionComponent;
+
 	class Actor
 	{
 		public:
@@ -29,6 +35,11 @@ namespace Scribble
 
 			bool SetLocation( const Vector2& Location );
 			virtual void Landed( const CollisionData& CollisionInfo );
+
+			void AttachComponent( Component* AComponent );
+			void DeattachComponent( Component* AComponent );
+
+			const Vector2& GetLocation() const;
 		protected:
 			virtual void SimulatePhysics( float Dt );
 			/*virtual void PhysFalling( float Dt );*/
@@ -41,8 +52,12 @@ namespace Scribble
 			Vector2 mLocation;
 			Vector2 mVelocity;
 
+			b2Body* mPhysicsBody;
 			AARB mCollision;
 			EPhysics mCurrentPhysics;
+			
+			foundation::Array<Component*> mAttachedComponents;
+			CollisionComponent* mCollisionComponent;
 	};
 }
 

@@ -108,6 +108,8 @@
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="Box2DDebugDraw.cpp" />
     <ClCompile Include="Cat.cpp" />
+    <ClCompile Include="CollisionComponent.cpp" />
+    <ClCompile Include="Component.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MenuButton.cpp" />
     <ClCompile Include="PhysicsWorld.cpp" />
@@ -130,6 +132,8 @@
     <ClInclude Include="..\foundation\types.h" />
     <ClInclude Include="AARB.h" />
     <ClInclude Include="Box2DDebugDraw.h" />
+    <ClInclude Include="CollisionComponent.h" />
+    <ClInclude Include="Component.h" />
     <ClInclude Include="PhysicsTypes.h" />
     <ClInclude Include="Actor.h" />
     <ClInclude Include="array_functions.h" />

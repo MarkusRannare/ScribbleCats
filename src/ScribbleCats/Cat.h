@@ -5,6 +5,8 @@
 
 #include <hge/hgeanim.h>
 
+class b2Body;
+
 namespace Scribble
 {
 	class Cat : public Actor

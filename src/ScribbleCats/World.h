@@ -8,10 +8,13 @@
 
 namespace Scribble
 {
-	//class PhysicsWorld;
+	class Component;
 
 	const float TO_PHYSICS = 0.015625f;
 	const float TO_WORLD = 64.0f;
+
+	inline b2Vec2 VectorToB2( Vector2 V );
+	inline Vector2 B2ToVector( b2Vec2 V );
 
 	class World
 	{
@@ -45,6 +48,9 @@ namespace Scribble
 
 			bool SetActorLocation( Actor* Actor, const Vector2& ToLocation );
 			bool MoveActor( Actor* Actor, const Vector2& ToLocation );
+
+			void ComponentAttached( Component* TheComponent );
+			void ComponentDeattached( Component* TheComponent );
 		protected:
 			bool ResolveCollision( Actor* Actor, 
 				const Vector2& TargetLocation, 
@@ -59,7 +65,19 @@ namespace Scribble
 			foundation::Array<Actor*> mActors;
 			foundation::Array<Actor*> mNewActors;
 			foundation::Array<Actor*> mDeadActors;
+
+			foundation::Array<Component*> mComponents;
 	};
+
+	b2Vec2 VectorToB2( Vector2 V )
+	{
+		return b2Vec2( V.X, V.Y );
+	}
+
+	Vector2 B2ToVector( b2Vec2 V )
+	{
+		return Vector2( V.x, V.y );
+	}
 }
 
 #endif

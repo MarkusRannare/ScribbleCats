@@ -8,6 +8,8 @@
 #include "AARB.h"
 #include "PhysicsWorld.h"
 #include <hge/hgeresource.h>
+#include "box2d\Box2D.h"
+#include "CollisionComponent.h"
 
 extern HGE* g_Hge;
 extern hgeResourceManager* g_ResManager;
@@ -23,19 +25,36 @@ namespace Scribble
 		mWalkLeft = g_ResManager->GetAnimation( "Player.WalkLeft" );
 		mWalkRight = g_ResManager->GetAnimation( "Player.WalkRight" );
 
+		mCollisionComponent = CollisionComponent::CreateRectangle( b2_kinematicBody, 28.0f, 31.0f );
+		AttachComponent( mCollisionComponent );
+		
+		/*b2BodyDef BodyDef;
+		BodyDef.position = VectorToB2( Location * TO_PHYSICS );
+		BodyDef.type = b2_kinematicBody;
+		BodyDef.fixedRotation = true;
+		BodyDef.gravityScale = 0.00000f;
+		
+		mPhysicsBody = g_World->GetPhysicsWorld().CreateBody( &BodyDef );
+
+		b2PolygonShape PolygonShape;
+		PolygonShape.SetAsBox( 28 * TO_PHYSICS, 31 * TO_PHYSICS );
+
+		mPhysicsBody->CreateFixture( &PolygonShape, 1.0f );*/
+
 		mWalkLeft->Play();
 		mWalkRight->Play();
 
 		mCurrentAnim = mWalkRight;
 		
-		mCollision._Center = mLocation;
-		mCollision._Extent = Vector2( 28, 31 );
-
 		mCurrentPhysics = PHYS_Falling;
 	}
 
 	Cat::~Cat()
 	{
+		if( mCollisionComponent )
+		{
+			MAKE_DELETE( memory_globals::default_allocator(), CollisionComponent, mCollisionComponent ); 
+		}
 	}
 
 	void Cat::Tick( float Dt )
@@ -85,11 +104,10 @@ namespace Scribble
 
 		mVelocity += mAcceleration * Dt;
 
-
-		/*if( mJumpPressed )
+		if( mJumpPressed )
 		{
 			mVelocity.Y -= 300.0f;
-		}*/
+		}
 
 		if( mRightHold )
 		{
