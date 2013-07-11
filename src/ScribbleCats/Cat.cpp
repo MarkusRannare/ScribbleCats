@@ -25,22 +25,9 @@ namespace Scribble
 		mWalkLeft = g_ResManager->GetAnimation( "Player.WalkLeft" );
 		mWalkRight = g_ResManager->GetAnimation( "Player.WalkRight" );
 
-		mCollisionComponent = CollisionComponent::CreateRectangle( b2_kinematicBody, 28.0f, 31.0f );
+		mCollisionComponent = CollisionComponent::CreateRectangle( b2_kinematicBody, Location, 28.0f, 31.0f );
 		AttachComponent( mCollisionComponent );
 		
-		/*b2BodyDef BodyDef;
-		BodyDef.position = VectorToB2( Location * TO_PHYSICS );
-		BodyDef.type = b2_kinematicBody;
-		BodyDef.fixedRotation = true;
-		BodyDef.gravityScale = 0.00000f;
-		
-		mPhysicsBody = g_World->GetPhysicsWorld().CreateBody( &BodyDef );
-
-		b2PolygonShape PolygonShape;
-		PolygonShape.SetAsBox( 28 * TO_PHYSICS, 31 * TO_PHYSICS );
-
-		mPhysicsBody->CreateFixture( &PolygonShape, 1.0f );*/
-
 		mWalkLeft->Play();
 		mWalkRight->Play();
 
@@ -51,10 +38,6 @@ namespace Scribble
 
 	Cat::~Cat()
 	{
-		if( mCollisionComponent )
-		{
-			MAKE_DELETE( memory_globals::default_allocator(), CollisionComponent, mCollisionComponent ); 
-		}
 	}
 
 	void Cat::Tick( float Dt )
@@ -123,9 +106,9 @@ namespace Scribble
 		g_World->MoveActor( this, DesiredDestination );
 	}
 
-	void Cat::Landed( const CollisionData& CollisionInfo )
+	void Cat::Landed( const TraceResult& CollisionInfo )
 	{
-		if( CollisionInfo._Normal.Y < -0.8f )
+		if( CollisionInfo.HitNormal.Y < -0.8f )
 		{
 			mCurrentPhysics = PHYS_Walking;
 		}
@@ -164,7 +147,7 @@ namespace Scribble
 
 		mVelocity = MoveDirection * 150.0f;
 
- 		g_World->MoveActor( this, mLocation + Vector2( 0, -5.0f ) );
+		g_World->MoveActor( this, mLocation + Vector2( 0, -5.0f ) );
 		g_World->MoveActor( this, mLocation + MoveDirection * 300.0f * Dt );
 
 		if( !g_World->MoveActor( this, mLocation + Vector2( 0, 5.1f ) ) )

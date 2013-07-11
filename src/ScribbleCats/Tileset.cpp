@@ -6,15 +6,17 @@
 #include "World.h"
 #include "PhysicsWorld.h"
 #include "PhysicsTypes.h"
+#include "CollisionComponent.h"
 
 using namespace foundation;
 
 namespace Scribble
 {
-	Tileset::Tileset( float TileWidth, float OriginX, float OriginY ) :
+	Tileset::Tileset( Vector2( Location ) ) :
+		Actor( Location ),
 		mLayers( memory_globals::default_allocator() ),
-		mTileWidth( TileWidth ),
-		mSprite( MAKE_NEW( memory_globals::default_allocator(), hgeSprite, NULL, 0, 0, TileWidth, TileWidth ) )
+		mTileWidth( 0 ),
+		mSprite( MAKE_NEW( memory_globals::default_allocator(), hgeSprite, NULL, 0, 0, 0, 0 ) )
 	{
 		mSprite->SetBlendMode( BLEND_ALPHABLEND );
 	}
@@ -29,8 +31,12 @@ namespace Scribble
 		MAKE_DELETE( memory_globals::default_allocator(), hgeSprite, mSprite );
 	}
 
-	void Tileset::AddLayer( int NumTilesX, INT NumTilesY, short* TileData, HTEXTURE SourceTexture )
+	//void Tileset::AddLayer( int NumTilesX, INT NumTilesY, short* TileData, HTEXTURE SourceTexture )
+	void Tileset::AddLayer( int NumTilesX, INT NumTilesY, float TileWidth, short* TileData, HTEXTURE SourceTexture )
 	{
+		// @TODO: Tile size is currently per tileset but is set per layer, decide if each layer should have a tile width or make it per actor
+		mTileWidth = TileWidth;
+		
 		int Index = array::add_zeroed( mLayers );
 
 		TileLayer& Layer = mLayers[Index];
@@ -45,8 +51,8 @@ namespace Scribble
 
 	void Tileset::CalculateCollisionData( int NumTilesX, int NumTilesY, short* TileData, TileLayer& Layer )
 	{
-		extern World* g_World;
-		b2World& PhysicsWorld = g_World->GetPhysicsWorld();
+		// @TODO: Make simplification so that we get less physic-bodies in the tileset!
+		// @TODO: Care about max size of a physics body (Box2D manual suggests 50 units as largest body, see Section 1.7 Units)
 		for( int Y = 0; Y < NumTilesY; ++Y )
 		{
 			for( int X = 0; X < NumTilesX; ++X )
@@ -55,29 +61,23 @@ namespace Scribble
 				short TileId = GetTileId( TileData[X+Y*NumTilesX] );
 				if( TileId >= 0 )
 				{
-					b2BodyDef TileBodyDef;
-					TileBodyDef.position.Set( ( X * mTileWidth + mTileWidth / 2.0f ) * TO_PHYSICS, ( Y * mTileWidth + mTileWidth / 2.0f ) * TO_PHYSICS ); 
-					TileBodyDef.type = b2_staticBody;
+					CollisionComponent* ColComp = CollisionComponent::CreateRectangle( 
+						b2_staticBody, 
+						Vector2( X * mTileWidth + mTileWidth / 2.0f, Y * mTileWidth + mTileWidth / 2.0f ), 
+						mTileWidth / 2.0f, 
+						mTileWidth / 2.0f );
 
-					b2Body* TileBody = PhysicsWorld.CreateBody( &TileBodyDef );
-
-					b2PolygonShape TileBox;
-					TileBox.SetAsBox( mTileWidth / 2.0f * TO_PHYSICS, mTileWidth / 2.0f * TO_PHYSICS );
-
-					TileBody->CreateFixture( &TileBox, 0.0f );
+					AttachComponent( ColComp );
 				}
 			}
 		}
-	}
-
-	void Tileset::Tick( float CenterX, float CenterY )
-	{
 	}
 
 	void Tileset::Render()
 	{
 		extern HGE* g_Hge;
 
+		// @TODO: Make a tileset rendering component that handles all the heavy lifting
 		for( size_t I = 0; I < array::size( mLayers ); ++I )
 		{
 			TileLayer& Layer = mLayers[I];

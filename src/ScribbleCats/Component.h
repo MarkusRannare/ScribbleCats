@@ -11,6 +11,11 @@ namespace Scribble
 			Component();
 			virtual ~Component();
 
+			inline Actor* GetOwner() const
+			{
+				return mOwner;
+			}
+
 			virtual void AttachedTo( Actor* NewOwner );
 			virtual void DeattachedFrom( Actor* OldOwner );
 		private:

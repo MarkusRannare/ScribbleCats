@@ -5,6 +5,7 @@
 #include <hge\hgeresource.h>
 #include <hge\hgefont.h>
 #include <hge\hgegui.h>
+#include "CollisionComponent.h"
 
 #include "World.h"
 #include "Tileset.h"
@@ -53,7 +54,7 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 	g_Hge->System_SetState(HGE_USESOUND, true);
 	g_Hge->System_SetState(HGE_SHOWSPLASH, false);
 
-	g_Hge->System_SetState(HGE_HIDEMOUSE, false);
+	g_Hge->System_SetState(HGE_HIDEMOUSE, true);
 
 	if(g_Hge->System_Initiate())
 	{
@@ -62,9 +63,9 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 		g_Font = MAKE_NEW( memory_globals::default_allocator(), hgeFont, "../Media/Fonts/font1.fnt" );
 
 		g_World = MAKE_NEW( memory_globals::default_allocator(), World );
-		g_Tileset = MAKE_NEW( memory_globals::default_allocator(), Tileset, 32, 0, 0 );
+		g_Tileset = g_World->Spawn<Tileset>( Vector2( 0, 0 ) );
 		g_Cat = g_World->Spawn<Cat>( Vector2( 200, 50 ) );
-		g_Tileset->AddLayer( 100, 100, LoadTileLayer( "ArtTest.MAR" ), g_Hge->Texture_Load( "../Media/Textures/Tileset.png" ) ); 
+		g_Tileset->AddLayer( 100, 100, 32.0f, LoadTileLayer( "ArtTest.MAR" ), g_Hge->Texture_Load( "../Media/Textures/Tileset.png" ) ); 
 
 		g_Hge->System_Start();
 	}
@@ -78,7 +79,6 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 
 	MAKE_DELETE( memory_globals::default_allocator(), hgeFont, g_Font );
 	MAKE_DELETE( memory_globals::default_allocator(), World, g_World );
-	MAKE_DELETE( memory_globals::default_allocator(), Tileset, g_Tileset );
 	MAKE_DELETE( memory_globals::default_allocator(), hgeResourceManager, g_ResManager );
 
 	g_Hge->Release();
@@ -101,11 +101,88 @@ bool FrameFunc()
 		g_Hge->Texture_Free( g_Tileset->mLayers[0].SourceTexture );
 		 g_Tileset->mLayers[0].SourceTexture = g_Hge->Texture_Load( "../Media/Textures/Tileset.png" );
 	}
-
+	
 	g_World->Tick( DeltaTime );
-	g_Tileset->Tick( 1280/2, 720/2 );
-		
+
 	return false;
+}
+
+/** Debug function for drawing boxes... */
+void DrawBox( const Vector2& Location, const Vector2& Extent, DWORD Color )
+{
+	g_Hge->Gfx_RenderLine( Location.X - Extent.X, Location.Y - Extent.Y, Location.X + Extent.X, Location.Y - Extent.Y, Color );
+	g_Hge->Gfx_RenderLine( Location.X + Extent.X, Location.Y - Extent.Y, Location.X + Extent.X, Location.Y + Extent.Y, Color );
+	g_Hge->Gfx_RenderLine( Location.X + Extent.X, Location.Y + Extent.Y, Location.X - Extent.X, Location.Y + Extent.Y, Color );
+	g_Hge->Gfx_RenderLine( Location.X - Extent.X, Location.Y + Extent.Y, Location.X - Extent.X, Location.Y - Extent.Y, Color );
+}
+
+/** Debug function for drawing the results of a sweep! Good for debugging! */
+void DrawSweeping( const Vector2& From, const Vector2& To, const Vector2& Extent, const TraceResult& TraceResults )
+{
+	DrawBox( From, Extent, ARGB( 255, 0, 255, 0 ) );
+	DrawBox( To, Extent, ARGB( 255, 0, 0, 255 ) );
+
+	if( To.Y < From.Y && From.X < To.X
+		|| To.Y > From.Y && From.X > To.X )
+	{
+		g_Hge->Gfx_RenderLine( 
+			From.X - Extent.X, 
+			From.Y - Extent.Y, 
+			To.X - Extent.X, 
+			To.Y - Extent.Y );
+	}
+
+	if( To.Y > From.Y && From.X < To.X 
+		|| To.Y < From.Y && From.X > To.X )
+	{ 
+		g_Hge->Gfx_RenderLine( 
+			From.X + Extent.X, 
+			From.Y - Extent.Y, 
+			To.X + Extent.X, 
+			To.Y - Extent.Y );
+	}
+
+	if( To.Y < From.Y && From.X < To.X
+		|| To.Y > From.Y && From.X > To.X )
+	{
+		g_Hge->Gfx_RenderLine( 
+			From.X + Extent.X, 
+			From.Y + Extent.Y, 
+			To.X + Extent.X, 
+			To.Y + Extent.Y );
+	}
+
+	if( To.Y > From.Y && From.X < To.X
+		|| To.Y < From.Y && From.X > To.X )
+	{
+		g_Hge->Gfx_RenderLine( 
+			From.X - Extent.X, 
+			From.Y + Extent.Y, 
+			To.X - Extent.X, 
+			To.Y + Extent.Y );
+	}
+
+	/*extern Array<Scribble::CollisionComponent*>* g_DebugBroadphaseComponents;
+	extern Array<Scribble::CollisionComponent*>* g_DebugHitComponents;
+
+	for( uint32_t Idx = 0; Idx < array::size( *g_DebugBroadphaseComponents ); ++Idx )
+	{
+		CollisionComponent* Component = (*g_DebugBroadphaseComponents)[Idx];
+		DrawBox( B2ToVector( Component->mPhysicsBody->GetPosition() ) * TO_WORLD, Vector2( 16.0f, 16.0f ), ARGB( 255, 255, 255, 0 ) ); 
+	}
+
+	for( uint32_t Idx = 0; Idx < array::size( *g_DebugHitComponents ); ++Idx )
+	{
+		CollisionComponent* Component = (*g_DebugHitComponents)[Idx];
+		DrawBox( B2ToVector( Component->mPhysicsBody->GetPosition() ) * TO_WORLD, Vector2( 16.0f, 16.0f ), ARGB( 255, 255, 0, 255 ) ); 
+	}*/
+
+	if( TraceResults.HitComponent != NULL )
+	{
+		DrawBox( TraceResults.HitLocation, Extent, ARGB( 255, 255, 0, 0 ) );
+		DrawBox( B2ToVector( ((CollisionComponent*)TraceResults.HitComponent)->mPhysicsBody->GetPosition() ) * TO_WORLD, Vector2( 16.0f, 16.0f ), ARGB( 255, 255, 255, 255 ) ); 
+		g_Hge->Gfx_RenderLine( TraceResults.HitLocation.X, TraceResults.HitLocation.Y, TraceResults.HitLocation.X + TraceResults.HitNormal.X * 10.0f, TraceResults.HitLocation.Y + TraceResults.HitNormal.Y * 10.0f );
+	}
 }
 
 bool RenderFunc()
@@ -115,11 +192,9 @@ bool RenderFunc()
 	g_Hge->Gfx_BeginScene();
 	g_Hge->Gfx_Clear( ARGB( 0, 0, 0, 0 ) );
 
-	g_Tileset->Render();
 	g_World->Render();
 
 	g_Font->printf( 10, 10, HGETEXT_LEFT, "FPS: %i", g_Hge->Timer_GetFPS() );
-
 	g_Hge->Gfx_EndScene();
 
 	return false;

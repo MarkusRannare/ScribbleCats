@@ -1,6 +1,7 @@
 #ifndef SCRIBBLE_TILESET_H
 #define SCRIBBLE_TILESET_H
 
+#include "Actor.h"
 #include <foundation/collection_types.h>
 #include <hge/hge.h>
 #include "PhysicsTypes.h"
@@ -21,16 +22,15 @@ namespace Scribble
 		HTEXTURE SourceTexture;
 	};
 
-	class Tileset
+	class Tileset : public Actor
 	{
 		public:
-			Tileset( float TileWidth, float OriginX, float OriginY );
+			Tileset( Vector2 Location );
 			~Tileset();
 
-			void AddLayer( int NumTilesX, INT NumTilesY, short* TileData, HTEXTURE SourceTexture );
+			void AddLayer( int NumTilesX, INT NumTilesY, float TileWidth, short* TileData, HTEXTURE SourceTexture );
 
-			void Tick( float CenterX, float CenterY );
-			void Render();
+			virtual void Render();
 
 			inline short GetTileId( short TileData )
 			{
@@ -40,6 +40,7 @@ namespace Scribble
 			void CalculateCollisionData( int NumTilesX, int NumTilesY, short* TileData, TileLayer& Layer );
 		private:
 			Tileset(); // No default constructor
+		// @TODO: Make the private part of the tileset private again
 		public:
 			foundation::Array< TileLayer > mLayers;
 			float mTileWidth;

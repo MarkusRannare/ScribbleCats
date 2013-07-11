@@ -21,8 +21,8 @@ namespace Scribble
 			virtual void DeattachedFrom( Actor* OldOwner );
 
 			static CollisionComponent* CreateCircle( b2BodyType BodyType, float Radius );
-			static CollisionComponent* CreateRectangle( b2BodyType BodyType, float Width, float Height );
-		private:
+			static CollisionComponent* CreateRectangle( b2BodyType BodyType, const Vector2& Location, float Width, float Height );
+		public:
 			b2Body* mPhysicsBody;
 			b2Fixture* mFixture;
 	};
