@@ -2,6 +2,7 @@
 #include "string.h"
 #include "World.h"
 #include "array_functions.h"
+#include "Component.h"
 
 using namespace foundation;
 
@@ -11,7 +12,6 @@ namespace Scribble
 		mLocation( Location ),
 		mVelocity( 0, 0 ),
 		mCurrentPhysics( PHYS_NONE ),
-		mPhysicsBody( NULL ),
 		mAttachedComponents( memory_globals::default_allocator() )
 	{
 		memset( &mCollision, 0, sizeof( mCollision ) );		
@@ -19,6 +19,15 @@ namespace Scribble
 
 	Actor::~Actor()
 	{
+		for( int32_t Idx = array::size( mAttachedComponents ) - 1; Idx >= 0; --Idx )
+		{
+			Component* Comp = mAttachedComponents[Idx];
+
+			DeattachComponent( Comp );
+			// @TODO: Make a better way to deallocate components
+			MAKE_DELETE( memory_globals::default_allocator(), Component, Comp );
+			array::pop_back( mAttachedComponents );
+		}
 	}
 
 	void Actor::Tick( float Dt )
@@ -45,7 +54,7 @@ namespace Scribble
 		return mLocation;
 	}
 
-	void Actor::Landed( const CollisionData& CollisionInfo )
+	void Actor::Landed( const TraceResult& CollisionInfo )
 	{
 	}
 
@@ -56,6 +65,7 @@ namespace Scribble
 		 if( FoundIndex == INDEX_NONE )
 		 {
 			array::push_back( mAttachedComponents, AComponent );
+			AComponent->AttachedTo( this );
 		 }
 	}
 
@@ -66,6 +76,7 @@ namespace Scribble
 		if( FoundIndex != INDEX_NONE )
 		{
 			array::remove_swap( mAttachedComponents, AComponent );
+			AComponent->DeattachedFrom( this );
 		}
 	}
 }

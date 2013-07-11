@@ -6,6 +6,7 @@
 namespace Scribble
 {
 	class World;
+	struct TraceResult;
 }
 
 #include "PhysicsTypes.h"
@@ -34,7 +35,7 @@ namespace Scribble
 			virtual void Render();
 
 			bool SetLocation( const Vector2& Location );
-			virtual void Landed( const CollisionData& CollisionInfo );
+			virtual void Landed( const TraceResult& CollisionInfo );
 
 			void AttachComponent( Component* AComponent );
 			void DeattachComponent( Component* AComponent );
@@ -52,7 +53,6 @@ namespace Scribble
 			Vector2 mLocation;
 			Vector2 mVelocity;
 
-			b2Body* mPhysicsBody;
 			AARB mCollision;
 			EPhysics mCurrentPhysics;
 			

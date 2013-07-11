@@ -27,15 +27,15 @@ namespace Scribble
 		return NULL;
 	}
 
-	CollisionComponent* CollisionComponent::CreateRectangle( b2BodyType BodyType, float Width, float Height )
+	CollisionComponent* CollisionComponent::CreateRectangle( b2BodyType BodyType, const Vector2& Location, float Width, float Height )
 	{
 		CollisionComponent* Component = MAKE_NEW( memory_globals::default_allocator(), CollisionComponent );
 
 		b2BodyDef BodyDef;
 		BodyDef.type = BodyType;
-		BodyDef.gravityScale = BodyType == b2_kinematicBody ? 0.0f : 1.0f;
 		BodyDef.fixedRotation = true;
 		BodyDef.userData = Component;
+		BodyDef.position.Set( Location.X * TO_PHYSICS, Location.Y * TO_PHYSICS );
 
 		Component->mPhysicsBody = g_World->GetPhysicsWorld().CreateBody( &BodyDef );
 		
@@ -43,6 +43,7 @@ namespace Scribble
 		RectangleShape.SetAsBox( Width * TO_PHYSICS, Height * TO_PHYSICS );
 
 		Component->mFixture = Component->mPhysicsBody->CreateFixture( &RectangleShape, 1.0f );
+		Component->mFixture->SetUserData( Component );
 
 		return Component;
 	}
@@ -50,8 +51,6 @@ namespace Scribble
 	void CollisionComponent::AttachedTo( Actor* NewOwner )
 	{
 		Component::AttachedTo( NewOwner );
-
-		mPhysicsBody->SetTransform( VectorToB2( NewOwner->GetLocation() * TO_PHYSICS ), 0 );
 	}
 
 	void CollisionComponent::DeattachedFrom( Actor* OldOwner )

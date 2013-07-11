@@ -135,6 +135,8 @@ namespace Scribble
 			return X * X + Y * Y;
 		}
 
+		inline static Vector2 Lerp( const Vector2& A, const Vector2& B, float Alpha );
+
 		void Rotate( float Theta )
 		{
 			X = cosf( Theta ) * X - sinf( Theta ) * Y;
@@ -190,9 +192,14 @@ namespace Scribble
 		};
 	};
 
-	inline const Vector2 operator*( float Scalar, const Vector2& Rhs )
+	inline Vector2 operator*( float Scalar, const Vector2& Rhs )
 	{
 		return Vector2( Rhs.X * Scalar, Rhs.Y * Scalar );
+	}
+
+	Vector2 Vector2::Lerp( const Vector2& A, const Vector2& B, float Alpha )
+	{
+		return ( 1.0f - Alpha ) * A + Alpha * B;
 	}
 }
 
