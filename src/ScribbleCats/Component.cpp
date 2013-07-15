@@ -8,13 +8,12 @@
 namespace Scribble
 {
 	Component::Component() :
-		mOwner( NULL )
+		Object()
 	{
 	}
 
 	Component::~Component()
 	{
-		mOwner = NULL;
 	}
 
 	void Component::AttachedTo( Actor* NewOwner )

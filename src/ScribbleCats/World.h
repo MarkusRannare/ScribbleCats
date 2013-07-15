@@ -21,7 +21,7 @@ namespace Scribble
 	struct TraceHit
 	{
 		Actor* HitActor;
-		Component* HitComponent;
+		CollisionComponent* HitComponent;
 		Vector2 HitNormal;
 		Vector2 HitLocation;
 		float HitTime;

@@ -41,7 +41,8 @@ namespace Scribble
 
 			static CollisionComponent* CreateCircle( b2BodyType BodyType, const Vector2& Location, float Radius );
 			static CollisionComponent* CreateRectangle( b2BodyType BodyType, const Vector2& Location, float Width, float Height );
-		public:
+		private:
+			friend class World;
 			b2Body* mPhysicsBody;
 			b2Fixture* mFixture;
 			AABB mAABB;

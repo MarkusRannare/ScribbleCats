@@ -199,7 +199,7 @@ void DrawSweeping( const Vector2& From, const Vector2& To, const Vector2& Extent
 	if( TraceResults.HitComponent != NULL )
 	{
 		DrawBox( TraceResults.HitLocation, Extent, ARGB( 255, 255, 0, 0 ) );
-		DrawBox( B2ToVector( ((CollisionComponent*)TraceResults.HitComponent)->mPhysicsBody->GetPosition() ) * TO_WORLD, Vector2( 16.0f, 16.0f ), ARGB( 255, 255, 255, 255 ) ); 
+		DrawBox( TraceResults.HitComponent->GetLocation(), Vector2( 16.0f, 16.0f ), ARGB( 255, 255, 255, 255 ) ); 
 		
 		const Vector2 HitLocation = TraceResults.HitLocation;
 		const Vector2 EndNormal = HitLocation + TraceResults.HitNormal * 20.0f;

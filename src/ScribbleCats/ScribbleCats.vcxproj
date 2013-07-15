@@ -112,6 +112,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MenuButton.cpp" />
+    <ClCompile Include="Object.cpp" />
     <ClCompile Include="Tileset.cpp" />
     <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="World.cpp" />
@@ -132,6 +133,7 @@
     <ClInclude Include="Box2DDebugDraw.h" />
     <ClInclude Include="CollisionComponent.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="PhysicsTypes.h" />
     <ClInclude Include="Actor.h" />
     <ClInclude Include="array_functions.h" />

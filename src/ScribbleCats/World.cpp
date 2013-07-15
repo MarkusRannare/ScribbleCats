@@ -283,7 +283,7 @@ namespace Scribble
 					CollisionComponent* OwningComponent = (CollisionComponent*)UserData;
 
 					// @TODO: Add other checks here, like, ownership checks
-					if( OwningComponent && OwningComponent->GetOwner() != Source )
+					if( OwningComponent && !Source->IsOwner( OwningComponent ) )
 					{
 						array::push_back( HitComponents, OwningComponent );
 					}
@@ -293,7 +293,9 @@ namespace Scribble
 
 				// Able to store 1024(512 in 64bit) results! This should be more than enough!
 				TempAllocator4096 Allocator;
+				// All components that was hit
 				Array<CollisionComponent*> HitComponents;
+				// The actor that does the trace
 				Actor* Source;
 		};
 
@@ -431,6 +433,7 @@ namespace Scribble
 				if( OldVelocity.Y > 0 && Actor->mVelocity.Y == 0 )
 				{
 					Actor->Landed( Result );
+					ShouldAbort = true;
 				}
 
 				if( Counter++ > 32 )

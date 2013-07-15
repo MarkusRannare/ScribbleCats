@@ -1,6 +1,8 @@
 #ifndef SCRIBBLE_ACTOR_H
 #define SCRIBBLE_ACTOR_H
 
+#include "Object.h"
+
 #include "foundation/collection_types.h"
 
 namespace Scribble
@@ -19,7 +21,7 @@ namespace Scribble
 	class Component;
 	class CollisionComponent;
 
-	class Actor
+	class Actor : public Object
 	{
 		public:
 			enum EPhysics
@@ -40,6 +42,8 @@ namespace Scribble
 			void AttachComponent( Component* AComponent );
 			void DeattachComponent( Component* AComponent );
 
+			inline bool IsOwner( Object* Object );
+
 			const Vector2& GetLocation() const;
 		protected:
 			virtual void SimulatePhysics( float Dt );
@@ -58,6 +62,25 @@ namespace Scribble
 			foundation::Array<Component*> mComponents;
 			CollisionComponent* mCollision;
 	};
+
+	inline bool Actor::IsOwner( Object* Object )
+	{
+		assert( Object );
+
+		Actor* Owner = Object->GetOwner();
+
+		while( Owner )
+		{
+			if( Owner == this )
+			{
+				return true;
+			}
+
+			Owner = Owner->GetOwner();
+		}
+		
+		return false;
+	}
 }
 
 #endif
