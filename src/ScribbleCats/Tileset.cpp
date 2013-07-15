@@ -48,28 +48,104 @@ namespace Scribble
 		CalculateCollisionData( NumTilesX, NumTilesY, TileData, Layer );
 	}
 
+	void Expand( Tileset* Tileset, short* TileData, int NumTilesX, int NumTilesY, int CurrX, int CurrY, int& LargestAreaX, int& LargestAreaY )
+	{
+		int LargestArea = 0;
+		int LargestX = NumTilesX;
+		int LargestY = NumTilesY;
+
+		// Worst case, search to the bottom of the tileset
+		for( int Y = CurrY; Y < NumTilesY; ++Y )
+		{
+			// New row and no collision, now we can stop
+			if( Tileset->GetTileId( TileData[CurrX+Y*NumTilesX] ) < 0 )
+			{
+				break;
+			}
+
+			// Store the X that is the smallest when expanding, so that we don't search unnessesary large areas
+			int ThisRoundsBestX = LargestX;
+			for( int X = CurrX; X < LargestX; ++X )
+			{
+				short TileID = Tileset->GetTileId( TileData[X+Y*NumTilesX] );
+
+				if( TileID >= 0 )
+				{
+					int CurrentTilesX = X - CurrX + 1;
+					int CurrentTilesY = Y - CurrY + 1;
+
+					int Area = CurrentTilesX * CurrentTilesY;
+					if( Area > LargestArea )
+					{
+						LargestArea = Area;
+						LargestAreaX = X;
+						LargestAreaY = Y;
+					}
+				}
+				else
+				{
+					ThisRoundsBestX = X;
+					// We found end of line, then break;
+					break;
+				}
+			}
+			if( ThisRoundsBestX < LargestX )
+			{
+				LargestX = ThisRoundsBestX;
+			}
+		}
+	}
+
 	void Tileset::CalculateCollisionData( int NumTilesX, int NumTilesY, short* TileData, TileLayer& Layer )
 	{
-		// @TODO: Make simplification so that we get less physic-bodies in the tileset!
 		// @TODO: Care about max size of a physics body (Box2D manual suggests 50 units as largest body, see Section 1.7 Units)
+		const int TileDataSize = NumTilesX * NumTilesY * sizeof(short);
+		short* TileDataCopy = (short*)memory_globals::default_scratch_allocator().allocate( TileDataSize );
+		memcpy_s( TileDataCopy, TileDataSize, TileData, TileDataSize );
+
 		for( int Y = 0; Y < NumTilesY; ++Y )
 		{
 			for( int X = 0; X < NumTilesX; ++X )
 			{
-				// 0 means no collision
-				short TileId = GetTileId( TileData[X+Y*NumTilesX] );
+				// < 0 means no collision
+				short TileId = GetTileId( TileDataCopy[X+Y*NumTilesX] );
 				if( TileId >= 0 )
 				{
+					int LargestX, LargestY;
+					// Expands a rectangle down right and tries to find a maximum area
+					Expand( this, TileDataCopy, NumTilesX, NumTilesY, X, Y, LargestX, LargestY );
+
+					Vector2 UpperLeftCorner = Vector2( X * mTileWidth, Y * mTileWidth);
+					Vector2 LowerRightCorner = Vector2( LargestX * mTileWidth + mTileWidth, LargestY * mTileWidth + mTileWidth );
+
+					Vector2 Center = ( UpperLeftCorner + LowerRightCorner ) / 2.0f;
+					float Width = LowerRightCorner.X - UpperLeftCorner.X;
+					float Height = LowerRightCorner.Y - UpperLeftCorner.Y;
+
 					CollisionComponent* ColComp = CollisionComponent::CreateRectangle( 
 						b2_staticBody, 
-						Vector2( X * mTileWidth + mTileWidth / 2.0f, Y * mTileWidth + mTileWidth / 2.0f ), 
-						mTileWidth, 
-						mTileWidth );
+						Center, 
+						Width, 
+						Height );
 
 					AttachComponent( ColComp );
+
+					// Zero the data so that we don't create collision from the expanded data
+					for( int WipeY = Y; WipeY <= LargestY; ++WipeY )
+					{
+						for( int WipeX = X; WipeX <= LargestX; ++WipeX )
+						{
+							TileDataCopy[WipeX+WipeY*NumTilesX] = 0;
+						}
+					}
+
+					// Skip a few tiles that we know the result for
+					X = LargestX + 1;
 				}
 			}
 		}
+
+		memory_globals::default_scratch_allocator().deallocate( TileDataCopy );
 	}
 
 	void Tileset::Render()
