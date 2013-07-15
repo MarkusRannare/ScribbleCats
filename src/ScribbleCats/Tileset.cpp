@@ -63,8 +63,8 @@ namespace Scribble
 					CollisionComponent* ColComp = CollisionComponent::CreateRectangle( 
 						b2_staticBody, 
 						Vector2( X * mTileWidth + mTileWidth / 2.0f, Y * mTileWidth + mTileWidth / 2.0f ), 
-						mTileWidth / 2.0f, 
-						mTileWidth / 2.0f );
+						mTileWidth, 
+						mTileWidth );
 
 					AttachComponent( ColComp );
 				}

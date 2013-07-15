@@ -37,6 +37,9 @@ namespace Scribble
 			virtual void Render();
 
 			bool SetLocation( const Vector2& Location );
+
+			inline EPhysics GetPhysics() const;
+
 			virtual void Landed( const TraceHit& CollisionInfo );
 
 			void AttachComponent( Component* AComponent );
@@ -80,6 +83,11 @@ namespace Scribble
 		}
 		
 		return false;
+	}
+
+	inline Actor::EPhysics Actor::GetPhysics() const
+	{
+		return mCurrentPhysics;
 	}
 }
 

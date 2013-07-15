@@ -32,6 +32,11 @@ namespace Scribble
 	void Actor::Tick( float Dt )
 	{
 		SimulatePhysics( Dt );
+
+		for( uint32_t Idx = 0; Idx < array::size( mComponents ); ++Idx )
+		{
+			mComponents[Idx]->Tick( Dt );
+		}
 	}
 
 	void Actor::SimulatePhysics( float Dt )

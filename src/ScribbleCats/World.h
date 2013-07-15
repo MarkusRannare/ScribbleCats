@@ -60,7 +60,7 @@ namespace Scribble
 			bool Trace( Actor* Source, const Vector2& From, const Vector2& To, const Vector2& Extent, TraceHit* Result = NULL, unsigned int Flags = 0 /** Currently unused */  );
 
 			bool SetActorLocation( Actor* Actor, const Vector2& ToLocation );
-			bool MoveActor( Actor* Actor, const Vector2& ToLocation );
+			bool MoveActor( Actor* Actor, const Vector2& FromLocation, const Vector2& ToLocation );
 
 			void ComponentAttached( Component* TheComponent );
 			void ComponentDeattached( Component* TheComponent );

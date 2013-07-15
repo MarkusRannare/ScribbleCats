@@ -16,6 +16,10 @@ namespace Scribble
 	{
 	}
 
+	void Component::Tick( float Dt )
+	{
+	}
+
 	void Component::AttachedTo( Actor* NewOwner )
 	{
 		assert( mOwner == NULL && "Can't attach a component to a actor if it already is attached to another actor" );

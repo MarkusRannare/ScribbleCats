@@ -162,8 +162,7 @@ namespace Scribble
 		};
 
 		b2AABB TargetLocation;
-		AABB AABB;
-		Actor->mCollision->GetAABB( AABB, CollisionComponent::S_World );
+		AABB AABB =	Actor->mCollision->GetAABB( CollisionComponent::S_World );
 		TargetLocation.lowerBound = VectorToB2( ( ToLocation - AABB._Extent ) * TO_PHYSICS );
 		TargetLocation.upperBound = VectorToB2( ( ToLocation + AABB._Extent ) * TO_PHYSICS );
 		
@@ -188,9 +187,10 @@ namespace Scribble
 		float TimesliceRemaining,
 		Vector2& out_NewWantedLocation )
 	{
-		Vector2 Displacement = TargetLocation - Actor->mLocation;
+		Vector2 Displacement = TargetLocation - Actor->GetLocation();
 
-		Actor->mLocation += Displacement * ( CollisionInfo.HitTime - 0.001f );
+		// Move the actor to the location we hit and leave a little space
+		Actor->mLocation = CollisionInfo.HitLocation;
 
 		// Kill all velocity in the direction of the normal for our current actor
 		Actor->mVelocity -= Actor->mVelocity.Dot( CollisionInfo.HitNormal ) * CollisionInfo.HitNormal;
@@ -199,8 +199,9 @@ namespace Scribble
 		Displacement -= Displacement.Dot( CollisionInfo.HitNormal ) * CollisionInfo.HitNormal;
 
 		out_NewWantedLocation = Actor->mLocation + Displacement * ( 1.0f - CollisionInfo.HitTime ) * TimesliceRemaining;
-		
-		return Displacement == Vector2::ZERO;
+
+		// We don't want any further movement if 
+		return Displacement == Vector2::ZERO || Actor->mVelocity == Vector2::ZERO;
 	}
 
 	static void CalculateQueryRegion( const Vector2& From, const Vector2& To, const Vector2& Extent, b2AABB& QueryRegion )
@@ -368,7 +369,7 @@ namespace Scribble
 				// [->]		( Neither is this )
 				// [  ] 
 				float HitDot = HitNormal.Dot( Vector2::Normalize( To - From ) );
-				if( Output.t <= 0 && ( HitDot == 0.0f || HitDot == 1.0f ) )
+				if( Output.t <= 0 && HitDot >= 0.0f )
 				{
 					continue;
 				}
@@ -389,7 +390,7 @@ namespace Scribble
 		return HitSomething;
 	}
 
-	bool World::MoveActor( Actor* Actor, const Vector2& ToLocation )
+	bool World::MoveActor( Actor* Actor, const Vector2& FromLocation, const Vector2& ToLocation )
 	{
 		// No collision for the physics body, just move it there
 		if( Actor->mCollision == NULL )
@@ -399,8 +400,10 @@ namespace Scribble
 		}
 
 		bool HitSomething = false;
+
 		Vector2 TargetLocation = ToLocation;
-		Vector2 FromLocation = Actor->mLocation;
+		Vector2 SourceLocation = FromLocation;
+
 		float TimesliceLeft = 1.0f;
 
 		const float TIMESLICE_EPSILON = 0.00001f;
@@ -411,7 +414,8 @@ namespace Scribble
 		while( TimesliceLeft > TIMESLICE_EPSILON )
 		{
 			TraceHit Result;
-			bool HitObject = Trace( Actor, FromLocation, TargetLocation, Vector2( 32, 28 ), &Result );
+
+			bool HitObject = Trace( Actor, SourceLocation, TargetLocation, Vector2( 32, 28 ), &Result );
 					
 			if( !HitObject )
 			{
@@ -428,9 +432,10 @@ namespace Scribble
 				Vector2 NewTargetLocation;
 				bool ShouldAbort = ResolveCollision( Actor, TargetLocation, Result, TimesliceLeft, NewTargetLocation );
 				TargetLocation = NewTargetLocation;
+				SourceLocation = Actor->mLocation;
 
 				// We have possible landed
-				if( OldVelocity.Y > 0 && Actor->mVelocity.Y == 0 )
+				if( Actor->GetPhysics() == Actor::PHYS_Falling && OldVelocity.Y > 0 && Actor->mVelocity.Y == 0 )
 				{
 					Actor->Landed( Result );
 					ShouldAbort = true;

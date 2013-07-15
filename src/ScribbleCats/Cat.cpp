@@ -24,7 +24,7 @@ namespace Scribble
 		mWalkLeft = g_ResManager->GetAnimation( "Player.WalkLeft" );
 		mWalkRight = g_ResManager->GetAnimation( "Player.WalkRight" );
 
-		mCollision = CollisionComponent::CreateRectangle( b2_kinematicBody, Location, 28.0f, 31.0f );
+		mCollision = CollisionComponent::CreateRectangle( b2_kinematicBody, Location, 52.0f, 58.0f );
 		AttachComponent( mCollision );
 		
 		mWalkLeft->Play();
@@ -86,23 +86,25 @@ namespace Scribble
 
 		mVelocity += mAcceleration * Dt;
 
-		if( mJumpPressed )
+		/*if( mJumpPressed )
 		{
 			mVelocity.Y -= 300.0f;
-		}
+		}*/
 
 		if( mRightHold )
 		{
-			mVelocity.X += 66.0f * Dt;
+			mVelocity.X += 110.0f * Dt;
+			mCurrentAnim = mWalkRight;
 		}
 		if( mLeftHold )
 		{
-			mVelocity.X -= 66.0f * Dt;
+			mVelocity.X -= 110.0f * Dt;
+			mCurrentAnim = mWalkLeft;
 		}
 
 		Vector2 DesiredDestination = mLocation + mVelocity * Dt + 0.5f * mAcceleration * Dt * Dt;
 
-		g_World->MoveActor( this, DesiredDestination );
+		g_World->MoveActor( this, mLocation, DesiredDestination );
 	}
 
 	void Cat::Landed( const TraceHit& CollisionInfo )
@@ -135,7 +137,7 @@ namespace Scribble
 
 		if( mJumpPressed )
 		{
-			mVelocity.Y -= 300.0f;
+			mVelocity.Y -= 450.0F;
 			mVelocity.X = MoveDirection.X * 150.0f;
 
 			mCurrentPhysics = PHYS_Falling;
@@ -146,12 +148,19 @@ namespace Scribble
 
 		mVelocity = MoveDirection * 150.0f;
 
-		g_World->MoveActor( this, mLocation + Vector2( 0, -5.0f ) );
-		g_World->MoveActor( this, mLocation + MoveDirection * 300.0f * Dt );
-
-		if( !g_World->MoveActor( this, mLocation + Vector2( 0, 5.1f ) ) )
+		if( mVelocity != Vector2::ZERO )
 		{
-			mCurrentPhysics = PHYS_Falling;
+			// Try step up 5 units
+			bool HitSomething = g_World->MoveActor( this, mLocation + Vector2( 0, 1.0f ) * b2_polygonRadius, mLocation + Vector2( 0, -5.0f ) );
+
+			// Move forward 300 units
+			g_World->MoveActor( this, mLocation, mLocation + MoveDirection * 300.0f * Dt );
+
+			// Try step down 5 units from original location
+			if( !g_World->MoveActor( this, mLocation, mLocation + Vector2( 0, 10.0f ) ) )
+			{
+				mCurrentPhysics = PHYS_Falling;
+			}
 		}
 	}
 

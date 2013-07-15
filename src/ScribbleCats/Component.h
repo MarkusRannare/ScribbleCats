@@ -13,6 +13,8 @@ namespace Scribble
 			Component();
 			virtual ~Component();
 
+			virtual void Tick( float Dt );
+
 			virtual void AttachedTo( Actor* NewOwner );
 			virtual void DeattachedFrom( Actor* OldOwner );
 	};

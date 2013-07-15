@@ -57,12 +57,12 @@ namespace Scribble
 		Component->mPhysicsBody = g_World->GetPhysicsWorld().CreateBody( &BodyDef );
 		
 		b2PolygonShape RectangleShape;
-		RectangleShape.SetAsBox( Width * TO_PHYSICS, Height * TO_PHYSICS );
+		RectangleShape.SetAsBox( Width / 2.0f * TO_PHYSICS, Height / 2.0f * TO_PHYSICS );
 
 		Component->mFixture = Component->mPhysicsBody->CreateFixture( &RectangleShape, 1.0f );
 		Component->mFixture->SetUserData( Component );
 
-		aabb::CreateRectangle( Location, Width / 2.0f, Height / 2.0f, Component->mAABB );
+		aabb::CreateRectangle( Location, Width, Height, Component->mAABB );
 
 		return Component;
 	}
@@ -93,5 +93,13 @@ namespace Scribble
 		b2Vec2 LinearVelocity = mPhysicsBody->GetLinearVelocity();
 
 		return B2ToVector( LinearVelocity ) * TO_WORLD;
+	}
+	
+	void CollisionComponent::Tick( float Dt )
+	{
+		if( mPhysicsBody->GetType() == b2_kinematicBody )
+		{
+			mPhysicsBody->SetTransform( VectorToB2( mOwner->GetLocation() * TO_PHYSICS ), 0.0f );
+		}
 	}
 }

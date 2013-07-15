@@ -29,15 +29,19 @@ namespace Scribble
 			virtual void AttachedTo( Actor* NewOwner );
 			virtual void DeattachedFrom( Actor* OldOwner );
 
-			inline void GetAABB( AABB& out_AABB, ESpace InSpace = S_World )
+			inline AABB GetAABB( ESpace InSpace = S_World )
 			{
-				out_AABB = mAABB;
+				AABB ReturnValue = mAABB;
 
 				if( InSpace == S_Physics )
 				{
-					out_AABB *= TO_PHYSICS;
+					ReturnValue *= TO_PHYSICS;
 				}
+
+				return ReturnValue;
 			}
+
+			virtual void Tick( float Dt );
 
 			static CollisionComponent* CreateCircle( b2BodyType BodyType, const Vector2& Location, float Radius );
 			static CollisionComponent* CreateRectangle( b2BodyType BodyType, const Vector2& Location, float Width, float Height );
