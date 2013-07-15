@@ -5,52 +5,36 @@
 
 namespace Scribble
 {
-	struct AARB
+	struct AABB
 	{
-		inline AARB();
-		inline AARB( const Vector2& Center, const Vector2& Extent );
-		inline AARB& operator=( const AARB& Other );
+		inline AABB();
+		inline AABB( const Vector2& Center, const Vector2& Extent );
+		inline AABB& operator=( const AABB& Other );
 
-		inline bool operator==( const AARB& Other ) const;
-		inline bool operator!=( const AARB& Other ) const;		
+		inline bool operator==( const AABB& Other ) const;
+		inline bool operator!=( const AABB& Other ) const;	
 
-		inline AARB operator*( float S ) const;
-
+		inline AABB operator*( float S ) const;
+		inline AABB& operator*=( float S );
+		
 		Vector2 _Center;
 		Vector2 _Extent;
-	};
-
-	struct Body
-	{
-		AARB _Collision;
-		void* _UserPointer;
-
-		inline bool operator==( const Body& Other ) const;
-		inline bool operator!=( const Body& Other ) const;
-	};
-
-	struct CollisionData
-	{
-		Vector2 _Normal;
-		float SurfaceArea;
-		float FirstContact;
-		float LastContact;
 	};
 }
 
 namespace Scribble
 {
-	AARB::AARB()
+	AABB::AABB()
 	{
 	}
 
-	AARB::AARB( const Vector2& Center, const Vector2& Extent ) :
+	AABB::AABB( const Vector2& Center, const Vector2& Extent ) :
 		_Center( Center ),
 		_Extent( Extent )
 	{
 	}
 
-	AARB& AARB::operator=( const AARB& Other )
+	AABB& AABB::operator=( const AABB& Other )
 	{
 		_Center = Other._Center;
 		_Extent = Other._Extent;
@@ -58,30 +42,29 @@ namespace Scribble
 		return *this;
 	}
 
-	bool AARB::operator==( const AARB& Other ) const
+	bool AABB::operator==( const AABB& Other ) const
 	{
 		return _Center == Other._Center && _Extent == Other._Extent;
 	}
 
-	bool AARB::operator!=( const AARB& Other ) const
+	bool AABB::operator!=( const AABB& Other ) const
 	{
 		return _Center != Other._Center || _Extent != Other._Extent;
 	}
 
-	inline AARB AARB::operator*( float S ) const
+	inline AABB AABB::operator*( float S ) const
 	{
-		return AARB( _Center * S, _Extent * S );
+		return AABB( _Center * S, _Extent * S );
 	}
 
-	bool Body::operator==( const Body& Other ) const
+	inline AABB& AABB::operator*=( float S )
 	{
-		return _Collision == Other._Collision && _UserPointer == Other._UserPointer;
+		_Center *= S;
+		_Extent *= S;
+
+		return *this;
 	}
 
-	bool Body::operator!=( const Body& Other ) const
-	{
-		return _Collision != Other._Collision || _UserPointer != Other._UserPointer;
-	}
 }
 
 #endif

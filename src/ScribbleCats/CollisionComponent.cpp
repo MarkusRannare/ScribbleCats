@@ -21,10 +21,27 @@ namespace Scribble
 		}
 	}
 
-	CollisionComponent* CollisionComponent::CreateCircle( b2BodyType BodyType, float Radius )
+	CollisionComponent* CollisionComponent::CreateCircle( b2BodyType BodyType, const Vector2& Location, float Radius )
 	{
-		assert( false && "Not implemented" );
-		return NULL;
+		CollisionComponent* Component = MAKE_NEW( memory_globals::default_allocator(), CollisionComponent );
+
+		b2BodyDef BodyDef;
+		BodyDef.type = BodyType;
+		BodyDef.fixedRotation = true;
+		BodyDef.userData = Component;
+		BodyDef.position.Set( Location.X * TO_PHYSICS, Location.Y * TO_PHYSICS );
+
+		Component->mPhysicsBody = g_World->GetPhysicsWorld().CreateBody( &BodyDef );
+		
+		b2CircleShape CircleShape;
+		CircleShape.m_radius = Radius * TO_PHYSICS;
+
+		Component->mFixture = Component->mPhysicsBody->CreateFixture( &CircleShape, 1.0f );
+		Component->mFixture->SetUserData( Component );
+
+		aabb::CreateBox( Location, Radius, Component->mAABB );
+
+		return Component;
 	}
 
 	CollisionComponent* CollisionComponent::CreateRectangle( b2BodyType BodyType, const Vector2& Location, float Width, float Height )
@@ -44,6 +61,8 @@ namespace Scribble
 
 		Component->mFixture = Component->mPhysicsBody->CreateFixture( &RectangleShape, 1.0f );
 		Component->mFixture->SetUserData( Component );
+
+		aabb::CreateRectangle( Location, Width / 2.0f, Height / 2.0f, Component->mAABB );
 
 		return Component;
 	}

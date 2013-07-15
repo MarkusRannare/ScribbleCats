@@ -6,7 +6,7 @@
 namespace Scribble
 {
 	class World;
-	struct TraceResult;
+	struct TraceHit;
 }
 
 #include "PhysicsTypes.h"
@@ -35,7 +35,7 @@ namespace Scribble
 			virtual void Render();
 
 			bool SetLocation( const Vector2& Location );
-			virtual void Landed( const TraceResult& CollisionInfo );
+			virtual void Landed( const TraceHit& CollisionInfo );
 
 			void AttachComponent( Component* AComponent );
 			void DeattachComponent( Component* AComponent );
@@ -53,11 +53,10 @@ namespace Scribble
 			Vector2 mLocation;
 			Vector2 mVelocity;
 
-			AARB mCollision;
 			EPhysics mCurrentPhysics;
 			
-			foundation::Array<Component*> mAttachedComponents;
-			CollisionComponent* mCollisionComponent;
+			foundation::Array<Component*> mComponents;
+			CollisionComponent* mCollision;
 	};
 }
 

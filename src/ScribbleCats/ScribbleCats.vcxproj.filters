@@ -57,12 +57,6 @@
     <ClCompile Include="Actor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Shape.cpp">
-      <Filter>Source Files\Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="PhysicsWorld.cpp">
-      <Filter>Source Files\Physics</Filter>
-    </ClCompile>
     <ClCompile Include="Vector2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -128,16 +122,7 @@
     <ClInclude Include="array_functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicsWorld.h">
-      <Filter>Header Files\Phisics</Filter>
-    </ClInclude>
-    <ClInclude Include="Shape.h">
-      <Filter>Header Files\Phisics</Filter>
-    </ClInclude>
     <ClInclude Include="PhysicsTypes.h">
-      <Filter>Header Files\Phisics</Filter>
-    </ClInclude>
-    <ClInclude Include="AARB.h">
       <Filter>Header Files\Phisics</Filter>
     </ClInclude>
     <ClInclude Include="Vector2.h">
@@ -151,6 +136,9 @@
     </ClInclude>
     <ClInclude Include="CollisionComponent.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AABB.h">
+      <Filter>Header Files\Phisics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

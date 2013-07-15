@@ -1,7 +1,6 @@
 #include "World.h"
 
 #include "array_functions.h"
-#include "PhysicsWorld.h"
 #include "Box2DDebugDraw.h"
 #include "CollisionComponent.h"
 #include "foundation/temp_allocator.h"
@@ -162,10 +161,11 @@ namespace Scribble
 				bool mFoundAnyCollision;
 		};
 
-		// @TODO: Use collision component instead of mCollision as it's not supported anymore
 		b2AABB TargetLocation;
-		TargetLocation.lowerBound = VectorToB2( ( ToLocation - Actor->mCollision._Extent ) * TO_PHYSICS );
-		TargetLocation.upperBound = VectorToB2( ( ToLocation + Actor->mCollision._Extent ) * TO_PHYSICS );
+		AABB AABB;
+		Actor->mCollision->GetAABB( AABB, CollisionComponent::S_World );
+		TargetLocation.lowerBound = VectorToB2( ( ToLocation - AABB._Extent ) * TO_PHYSICS );
+		TargetLocation.upperBound = VectorToB2( ( ToLocation + AABB._Extent ) * TO_PHYSICS );
 		
 		FreeSpaceCallback Callback;
 		mPhysicsWorld.QueryAABB( &Callback, TargetLocation );
@@ -184,7 +184,7 @@ namespace Scribble
 
 	bool World::ResolveCollision( Actor* Actor, 
 		const Vector2& TargetLocation,
-		const TraceResult& CollisionInfo,
+		const TraceHit& CollisionInfo,
 		float TimesliceRemaining,
 		Vector2& out_NewWantedLocation )
 	{
@@ -214,26 +214,28 @@ namespace Scribble
 	// Compute the normal at the specified point.
 	b2Vec2 ComputeNormal( const b2Shape& Shape, const b2Vec2& Point, const b2Transform& Xf )
 	{
-		// @TODO: Implement and verify
-		assert( false && "Not actually tested at all! DO THIS NAO!" );
-
 		if( Shape.GetType() == b2Shape::e_circle )
 		{
 			const b2CircleShape& Circle = static_cast<const b2CircleShape&>( Shape );
-			b2Vec2 Normal = Point - b2Mul( Xf, /*circle.GetLocalPosition()*/ b2Vec2_zero );
-			assert( false && "Not sure if the normal is calculated correctly, verify!" );
+
+			b2Vec2 Normal = Point - Xf.p;
 			Normal.Normalize();
+
 			return Normal;
 		}
 		if( Shape.GetType() == b2Shape::e_polygon )
 		{
 			const b2PolygonShape& Poly = static_cast<const b2PolygonShape&>( Shape );
+
 			int Count = Poly.GetVertexCount();
-			//const b2Vec2* Vertices = Poly.m_vertices;// GetVertices();
-			const b2Vec2* Normals = Poly.m_normals; // GetNormals();
+			const b2Vec2* Normals = Poly.m_normals;
+
+			// Calculate the hit point
 			b2Vec2 P = b2MulT( Xf, Point );
+
 			int NormalIndex = 0;
 			float MaxSeparation = -b2_maxFloat;
+			// Find closest vertice
 			for( int Idx = 0; Idx < Count; ++Idx )
 			{
 				float Separation = b2Dot( P - Poly.GetVertex( Idx ), Normals[Idx] );
@@ -243,6 +245,7 @@ namespace Scribble
 					NormalIndex = Idx;
 				}
 			}
+			// Transform the normal into world space
 			return b2Mul( Xf.q, Normals[NormalIndex] );
 		}
 		if ( Shape.GetType() == b2Shape::e_edge )
@@ -251,13 +254,13 @@ namespace Scribble
 			/*const b2EdgeShape& Edge = static_cast<const b2EdgeShape&>( Shape );
 			return b2Mul( Xf.R, Edge.GetNormalVector() );*/
 		}
-		assert( false );
+		assert( false && "Trying to calculate normal for unknown shape type" );
 
 		return b2Vec2_zero;
 	}
 
 
-	bool World::Trace( Actor* Source, const Vector2& From, const Vector2& To, const Vector2& Extent, TraceResult& Result, unsigned int Flags /* = 0 */ )
+	bool World::Trace( Actor* Source, const Vector2& From, const Vector2& To, const Vector2& Extent, TraceHit* Result /** =NULL */, unsigned int Flags /* = 0 */ )
 	{
 		// @TODO: Should we allow tracing without a source, so that we don't ignore any collision from the trace?
 		assert( Source );
@@ -300,8 +303,6 @@ namespace Scribble
 		TraceAABBCallback BroadphaseQuery( Source );
 		mPhysicsWorld.QueryAABB( &BroadphaseQuery, QueryRegion );
 
-		memset( &Result, 0, sizeof( TraceResult ) );
-
 		// The box we will sweep
 		b2PolygonShape SweepShape;
 		SweepShape.SetAsBox( Extent.X * TO_PHYSICS, Extent.Y * TO_PHYSICS );
@@ -323,6 +324,11 @@ namespace Scribble
 
 		Input.tMax = 1.0f;
 
+		if( Result )
+		{
+			memset( Result, 0, sizeof( TraceHit ) );
+		}
+
 		bool HitSomething = false;
 		b2TOIOutput FirstHit;
 		FirstHit.t = 1.0001f;
@@ -331,13 +337,12 @@ namespace Scribble
 		{
 			CollisionComponent* TraceAgainst = TraceList[Idx];
 
-			// @todo: Cache mass calculation or do it more efficient
-			b2MassData Mass;
-			TraceAgainst->mFixture->GetShape()->ComputeMass( &Mass, 1.0f );
 			Input.proxyB.Set( TraceAgainst->mFixture->GetShape(), 0 );
 			// Setup the other body as stationary
 			Input.sweepB.alpha0 = 0;
-			// @todo: Do we need to set this?
+			// @todo: Cache mass calculation or do it more efficient
+			b2MassData Mass;
+			TraceAgainst->mFixture->GetShape()->ComputeMass( &Mass, 1.0f );
 			Input.sweepB.localCenter = Mass.center;
 			Input.sweepB.c0 = VectorToB2( TraceAgainst->GetLocation() * TO_PHYSICS );
 			Input.sweepB.c = VectorToB2( TraceAgainst->GetLocation() * TO_PHYSICS );
@@ -367,11 +372,14 @@ namespace Scribble
 				}
 
 				FirstHit = Output;
-				Result.HitComponent = TraceAgainst;
-				Result.HitActor = TraceAgainst->GetOwner();
-				Result.HitLocation = HitLocation;
-				Result.HitNormal = HitNormal;
-				Result.HitTime = Output.t;
+				if( Result )
+				{
+					Result->HitComponent = TraceAgainst;
+					Result->HitActor = TraceAgainst->GetOwner();
+					Result->HitLocation = HitLocation;
+					Result->HitNormal = HitNormal;
+					Result->HitTime = Output.t;
+				}
 				HitSomething = true;
 			}
 		}
@@ -382,7 +390,7 @@ namespace Scribble
 	bool World::MoveActor( Actor* Actor, const Vector2& ToLocation )
 	{
 		// No collision for the physics body, just move it there
-		if( Actor->mCollisionComponent == NULL )
+		if( Actor->mCollision == NULL )
 		{
 			Actor->mLocation = ToLocation;
 			return false;
@@ -400,8 +408,8 @@ namespace Scribble
 
 		while( TimesliceLeft > TIMESLICE_EPSILON )
 		{
-			TraceResult Result;
-			bool HitObject = Trace( Actor, FromLocation, TargetLocation, Vector2( 32, 28 ), Result );
+			TraceHit Result;
+			bool HitObject = Trace( Actor, FromLocation, TargetLocation, Vector2( 32, 28 ), &Result );
 					
 			if( !HitObject )
 			{

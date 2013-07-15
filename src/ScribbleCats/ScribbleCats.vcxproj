@@ -112,8 +112,6 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MenuButton.cpp" />
-    <ClCompile Include="PhysicsWorld.cpp" />
-    <ClCompile Include="Shape.cpp" />
     <ClCompile Include="Tileset.cpp" />
     <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="World.cpp" />
@@ -130,7 +128,7 @@
     <ClInclude Include="..\foundation\string_stream.h" />
     <ClInclude Include="..\foundation\temp_allocator.h" />
     <ClInclude Include="..\foundation\types.h" />
-    <ClInclude Include="AARB.h" />
+    <ClInclude Include="AABB.h" />
     <ClInclude Include="Box2DDebugDraw.h" />
     <ClInclude Include="CollisionComponent.h" />
     <ClInclude Include="Component.h" />
@@ -139,8 +137,6 @@
     <ClInclude Include="array_functions.h" />
     <ClInclude Include="Cat.h" />
     <ClInclude Include="MenuButton.h" />
-    <ClInclude Include="PhysicsWorld.h" />
-    <ClInclude Include="Shape.h" />
     <ClInclude Include="Tileset.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="World.h" />

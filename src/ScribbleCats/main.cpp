@@ -12,6 +12,9 @@
 #include "Cat.h"
 #include <cassert>
 
+// @DEBUG: Set this to 1 to se the result of a trace
+#define DEBUG_TRACE 0
+
 using namespace foundation;
 using namespace Scribble;
 
@@ -25,6 +28,12 @@ bool g_DebugRenderPhysics = true;
 
 bool FrameFunc();
 bool RenderFunc();
+
+#if DEBUG_TRACE
+bool SweepMoveSource = false;
+Vector2 SweepSource, SweepDestination, SweepExtent;
+TraceHit Trace;
+#endif
 
 int g_ScreenWidth = 1280;
 int g_ScreenHeight = 720;
@@ -67,6 +76,13 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 		g_Cat = g_World->Spawn<Cat>( Vector2( 200, 50 ) );
 		g_Tileset->AddLayer( 100, 100, 32.0f, LoadTileLayer( "ArtTest.MAR" ), g_Hge->Texture_Load( "../Media/Textures/Tileset.png" ) ); 
 
+#if DEBUG_TRACE
+		CollisionComponent* Comp = CollisionComponent::CreateCircle( b2_staticBody, Vector2( 500, 500 ), 25.0f );
+		g_Tileset->AttachComponent( Comp );
+
+		SweepExtent = Vector2( 20, 20 );
+#endif
+
 		g_Hge->System_Start();
 	}
 	else
@@ -76,7 +92,7 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 	}
 
 	g_World->ClearActorList();
-
+	
 	MAKE_DELETE( memory_globals::default_allocator(), hgeFont, g_Font );
 	MAKE_DELETE( memory_globals::default_allocator(), World, g_World );
 	MAKE_DELETE( memory_globals::default_allocator(), hgeResourceManager, g_ResManager );
@@ -99,10 +115,28 @@ bool FrameFunc()
 	if( g_Hge->Input_KeyDown( HGEK_R ) )
 	{
 		g_Hge->Texture_Free( g_Tileset->mLayers[0].SourceTexture );
-		 g_Tileset->mLayers[0].SourceTexture = g_Hge->Texture_Load( "../Media/Textures/Tileset.png" );
+		g_Tileset->mLayers[0].SourceTexture = g_Hge->Texture_Load( "../Media/Textures/Tileset.png" );
 	}
-	
+
 	g_World->Tick( DeltaTime );
+
+#if DEBUG_TRACE
+	if( g_Hge->Input_KeyUp( HGEK_LBUTTON ) )
+	{
+		SweepMoveSource = !SweepMoveSource;
+	}
+
+	Vector2& ToMove = SweepMoveSource ? SweepSource : SweepDestination;
+	Vector2 MousePos;
+
+	g_Hge->Input_GetMousePos( &MousePos.X, &MousePos.Y );
+	
+	ToMove += MousePos - Vector2( g_ScreenWidth / 2.0f, g_ScreenHeight / 2.0f );
+	
+	g_Hge->Input_SetMousePos( g_ScreenWidth / 2.0f, g_ScreenHeight / 2.0f );
+
+	g_World->Trace( g_Cat, SweepSource, SweepDestination, SweepExtent, &Trace );
+#endif
 
 	return false;
 }
@@ -117,7 +151,7 @@ void DrawBox( const Vector2& Location, const Vector2& Extent, DWORD Color )
 }
 
 /** Debug function for drawing the results of a sweep! Good for debugging! */
-void DrawSweeping( const Vector2& From, const Vector2& To, const Vector2& Extent, const TraceResult& TraceResults )
+void DrawSweeping( const Vector2& From, const Vector2& To, const Vector2& Extent, const TraceHit& TraceResults )
 {
 	DrawBox( From, Extent, ARGB( 255, 0, 255, 0 ) );
 	DrawBox( To, Extent, ARGB( 255, 0, 0, 255 ) );
@@ -162,26 +196,24 @@ void DrawSweeping( const Vector2& From, const Vector2& To, const Vector2& Extent
 			To.Y + Extent.Y );
 	}
 
-	/*extern Array<Scribble::CollisionComponent*>* g_DebugBroadphaseComponents;
-	extern Array<Scribble::CollisionComponent*>* g_DebugHitComponents;
-
-	for( uint32_t Idx = 0; Idx < array::size( *g_DebugBroadphaseComponents ); ++Idx )
-	{
-		CollisionComponent* Component = (*g_DebugBroadphaseComponents)[Idx];
-		DrawBox( B2ToVector( Component->mPhysicsBody->GetPosition() ) * TO_WORLD, Vector2( 16.0f, 16.0f ), ARGB( 255, 255, 255, 0 ) ); 
-	}
-
-	for( uint32_t Idx = 0; Idx < array::size( *g_DebugHitComponents ); ++Idx )
-	{
-		CollisionComponent* Component = (*g_DebugHitComponents)[Idx];
-		DrawBox( B2ToVector( Component->mPhysicsBody->GetPosition() ) * TO_WORLD, Vector2( 16.0f, 16.0f ), ARGB( 255, 255, 0, 255 ) ); 
-	}*/
-
 	if( TraceResults.HitComponent != NULL )
 	{
 		DrawBox( TraceResults.HitLocation, Extent, ARGB( 255, 255, 0, 0 ) );
 		DrawBox( B2ToVector( ((CollisionComponent*)TraceResults.HitComponent)->mPhysicsBody->GetPosition() ) * TO_WORLD, Vector2( 16.0f, 16.0f ), ARGB( 255, 255, 255, 255 ) ); 
-		g_Hge->Gfx_RenderLine( TraceResults.HitLocation.X, TraceResults.HitLocation.Y, TraceResults.HitLocation.X + TraceResults.HitNormal.X * 10.0f, TraceResults.HitLocation.Y + TraceResults.HitNormal.Y * 10.0f );
+		
+		const Vector2 HitLocation = TraceResults.HitLocation;
+		const Vector2 EndNormal = HitLocation + TraceResults.HitNormal * 20.0f;
+
+		// Draw normal
+		g_Hge->Gfx_RenderLine( HitLocation.X, HitLocation.Y, EndNormal.X, EndNormal.Y );
+		// Draw left part of arrow
+		Vector2 Flerp = TraceResults.HitNormal;
+		Flerp.Rotate( 0.5f );
+		g_Hge->Gfx_RenderLine( EndNormal.X, EndNormal.Y, EndNormal.X - Flerp.X * 10.0f, EndNormal.Y - Flerp.Y * 10.0f );
+		// Draw right part of arrow
+		Flerp = TraceResults.HitNormal;
+		Flerp.Rotate( -0.5f );
+		g_Hge->Gfx_RenderLine( EndNormal.X, EndNormal.Y, EndNormal.X - Flerp.X * 10.0f, EndNormal.Y - Flerp.Y * 10.0f );
 	}
 }
 
@@ -195,6 +227,10 @@ bool RenderFunc()
 	g_World->Render();
 
 	g_Font->printf( 10, 10, HGETEXT_LEFT, "FPS: %i", g_Hge->Timer_GetFPS() );
+
+#if DEBUG_TRACE
+	DrawSweeping( SweepSource, SweepDestination, SweepExtent, Trace );
+#endif
 	g_Hge->Gfx_EndScene();
 
 	return false;

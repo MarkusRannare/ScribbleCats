@@ -3,6 +3,8 @@
 #include "World.h"
 #include <hge/hge.h>
 
+#define B2TOCOLOR( Color ) ARGB( 255, Color.r * 255, Color.g * 255, Color.b * 255 )
+
 namespace Scribble
 {
 	void Box2DDebugDraw::DrawPolygon( const b2Vec2* Vertices, int32 VertexCount, const b2Color& Color )
@@ -11,7 +13,7 @@ namespace Scribble
 		for( int32 Idx = 0; Idx < VertexCount; ++Idx )
 		{
 			int32 ToIdx = ( Idx + 1 ) % VertexCount;
-			g_Hge->Gfx_RenderLine( Vertices[Idx].x * TO_WORLD, Vertices[Idx].y* TO_WORLD, Vertices[ToIdx].x* TO_WORLD, Vertices[ToIdx].y * TO_WORLD, ARGB( 255, Color.r * 255, Color.g * 255, Color.b * 255 ) );
+			g_Hge->Gfx_RenderLine( Vertices[Idx].x * TO_WORLD, Vertices[Idx].y* TO_WORLD, Vertices[ToIdx].x* TO_WORLD, Vertices[ToIdx].y * TO_WORLD, B2TOCOLOR( Color ) );
 		}
 		/*		glColor3f(color.r, color.g, color.b);
 		glBegin(GL_LINE_LOOP);
@@ -24,87 +26,59 @@ namespace Scribble
 
 	void Box2DDebugDraw::DrawSolidPolygon( const b2Vec2* Vertices, int32 VertexCount, const b2Color& Color )
 	{
-		extern HGE* g_Hge;
+		// @TODO: Draw filled polygon
 
-		for( int32 Idx = 0; Idx < VertexCount; ++Idx )
-		{
-			int32 ToIdx = ( Idx + 1 ) % VertexCount;
-			g_Hge->Gfx_RenderLine( Vertices[Idx].x * TO_WORLD, Vertices[Idx].y * TO_WORLD, Vertices[ToIdx].x * TO_WORLD, Vertices[ToIdx].y * TO_WORLD, ARGB( 255, Color.r * 255, Color.g * 255, Color.b * 255 ) );
-		}
-/*		glEnable(GL_BLEND);
-		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glColor4f(0.5f * color.r, 0.5f * color.g, 0.5f * color.b, 0.5f);
-		glBegin(GL_TRIANGLE_FAN);
-		for (int32 i = 0; i < vertexCount; ++i)
-		{
-			glVertex2f(vertices[i].x, vertices[i].y);
-		}
-		glEnd();
-		glDisable(GL_BLEND);
-
-		glColor4f(color.r, color.g, color.b, 1.0f);
-		glBegin(GL_LINE_LOOP);
-		for (int32 i = 0; i < vertexCount; ++i)
-		{
-			glVertex2f(vertices[i].x, vertices[i].y);
-		}
-		glEnd();*/
+		DrawPolygon( Vertices, VertexCount, Color );
 	}
 
 	void Box2DDebugDraw::DrawCircle( const b2Vec2& Center, float32 Radius, const b2Color& Color )
 	{
-		/*const float32 k_segments = 16.0f;
-		const float32 k_increment = 2.0f * b2_pi / k_segments;
-		float32 theta = 0.0f;
-		glColor3f(color.r, color.g, color.b);
-		glBegin(GL_LINE_LOOP);
-		for (int32 i = 0; i < k_segments; ++i)
+		float SEGMENTS = 16.0f;
+		float INCREMENT = 2.0f * b2_pi / SEGMENTS;
+
+		float Theta = 0.0f;
+		b2Vec2 OldLocation = Center + Radius * b2Vec2( cosf(Theta), sinf(Theta) );
+		OldLocation.x *= TO_WORLD;
+		OldLocation.y *= TO_WORLD;
+		for( int Idx = 0; Idx < SEGMENTS; ++Idx )
 		{
-			b2Vec2 v = center + radius * b2Vec2(cosf(theta), sinf(theta));
-			glVertex2f(v.x, v.y);
-			theta += k_increment;
+			b2Vec2 NewLocation = Center + Radius * b2Vec2( cosf(Theta + INCREMENT), sinf(Theta + INCREMENT) );
+			NewLocation.x *= TO_WORLD;
+			NewLocation.y *= TO_WORLD;
+
+			extern HGE* g_Hge;
+			g_Hge->Gfx_RenderLine( OldLocation.x, OldLocation.y, NewLocation.x, NewLocation.y, B2TOCOLOR( Color ) );
+
+			Theta += INCREMENT;
+
+			OldLocation = NewLocation;
 		}
-		glEnd();*/
 	}
 
 	void Box2DDebugDraw::DrawSolidCircle( const b2Vec2& Center, float32 Radius, const b2Vec2& Axis, const b2Color& Color )
 	{
-/*		const float32 k_segments = 16.0f;
-		const float32 k_increment = 2.0f * b2_pi / k_segments;
-		float32 theta = 0.0f;
-		glEnable(GL_BLEND);
-		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glColor4f(0.5f * color.r, 0.5f * color.g, 0.5f * color.b, 0.5f);
-		glBegin(GL_TRIANGLE_FAN);
-		for (int32 i = 0; i < k_segments; ++i)
-		{
-			b2Vec2 v = center + radius * b2Vec2(cosf(theta), sinf(theta));
-			glVertex2f(v.x, v.y);
-			theta += k_increment;
-		}
-		glEnd();
-		glDisable(GL_BLEND);
+		// @TODO: Draw filled circle
 
-		theta = 0.0f;
-		glColor4f(color.r, color.g, color.b, 1.0f);
-		glBegin(GL_LINE_LOOP);
-		for (int32 i = 0; i < k_segments; ++i)
-		{
-			b2Vec2 v = center + radius * b2Vec2(cosf(theta), sinf(theta));
-			glVertex2f(v.x, v.y);
-			theta += k_increment;
-		}
-		glEnd();
+		DrawCircle( Center, Radius, Color );
+		extern HGE* g_Hge;
 
-		b2Vec2 p = center + radius * axis;
-		glBegin(GL_LINES);
-		glVertex2f(center.x, center.y);
-		glVertex2f(p.x, p.y);
-		glEnd();*/
+		const Vector2 Location = Vector2( Center.x * TO_WORLD, Center.y * TO_WORLD );
+		const Vector2 EndNormal = Location + B2ToVector( Axis ) * 15.0f;
+		// Draw normal
+		g_Hge->Gfx_RenderLine( Location.X, Location.Y, EndNormal.X, EndNormal.Y, B2TOCOLOR( Color ) );
+		// Draw left part of arrow
+		Vector2 Flerp = B2ToVector( Axis );
+		Flerp.Rotate( 0.5f );
+		g_Hge->Gfx_RenderLine( EndNormal.X, EndNormal.Y, EndNormal.X - Flerp.X * 10.0f, EndNormal.Y - Flerp.Y * 10.0f, B2TOCOLOR( Color ) );
+		// Draw right part of arrow
+		Flerp = B2ToVector( Axis );
+		Flerp.Rotate( -0.5f );
+		g_Hge->Gfx_RenderLine( EndNormal.X, EndNormal.Y, EndNormal.X - Flerp.X * 10.0f, EndNormal.Y - Flerp.Y * 10.0f, B2TOCOLOR( Color ) );
 	}
 
 	void Box2DDebugDraw::DrawSegment( const b2Vec2& P1, const b2Vec2& P2, const b2Color& Color )
 	{
+		// @TODO: Draw Segment
 /*		glColor3f(color.r, color.g, color.b);
 		glBegin(GL_LINES);
 		glVertex2f(p1.x, p1.y);
@@ -114,6 +88,7 @@ namespace Scribble
 
 	void Box2DDebugDraw::DrawTransform( const b2Transform& Xf )
 	{
+		// @TODO: Draw transform
 /*		b2Vec2 p1 = xf.p, p2;
 		const float32 k_axisScale = 0.4f;
 		glBegin(GL_LINES);
@@ -133,6 +108,7 @@ namespace Scribble
 
 	void Box2DDebugDraw::DrawPoint( const b2Vec2& P, float32 Size, const b2Color& Color )
 	{
+		// @TODO: Draw Point
 /*		glPointSize(size);
 		glBegin(GL_POINTS);
 		glColor3f(color.r, color.g, color.b);
@@ -143,6 +119,7 @@ namespace Scribble
 
 	void Box2DDebugDraw::DrawString( int X, int Y, const char* String, ... )
 	{
+		// @TODO: Draw string
 /*		char buffer[128];
 
 		va_list arg;
@@ -176,6 +153,7 @@ namespace Scribble
 
 	void Box2DDebugDraw::DrawAABB( b2AABB* AABB, const b2Color& Color )
 	{
+		// @TODO: Draw AABB
 /*		glColor3f(c.r, c.g, c.b);
 		glBegin(GL_LINE_LOOP);
 		glVertex2f(aabb->lowerBound.x, aabb->lowerBound.y);

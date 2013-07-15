@@ -12,21 +12,20 @@ namespace Scribble
 		mLocation( Location ),
 		mVelocity( 0, 0 ),
 		mCurrentPhysics( PHYS_NONE ),
-		mAttachedComponents( memory_globals::default_allocator() )
+		mComponents( memory_globals::default_allocator() )
 	{
-		memset( &mCollision, 0, sizeof( mCollision ) );		
 	}
 
 	Actor::~Actor()
 	{
-		for( int32_t Idx = array::size( mAttachedComponents ) - 1; Idx >= 0; --Idx )
+		for( int32_t Idx = array::size( mComponents ) - 1; Idx >= 0; --Idx )
 		{
-			Component* Comp = mAttachedComponents[Idx];
+			Component* Comp = mComponents[Idx];
 
 			DeattachComponent( Comp );
 			// @TODO: Make a better way to deallocate components
 			MAKE_DELETE( memory_globals::default_allocator(), Component, Comp );
-			array::pop_back( mAttachedComponents );
+			array::pop_back( mComponents );
 		}
 	}
 
@@ -54,28 +53,28 @@ namespace Scribble
 		return mLocation;
 	}
 
-	void Actor::Landed( const TraceResult& CollisionInfo )
+	void Actor::Landed( const TraceHit& CollisionInfo )
 	{
 	}
 
 	void Actor::AttachComponent( Component* AComponent )
 	{
-		 int FoundIndex = array::find( mAttachedComponents, AComponent );
+		 int FoundIndex = array::find( mComponents, AComponent );
 
 		 if( FoundIndex == INDEX_NONE )
 		 {
-			array::push_back( mAttachedComponents, AComponent );
+			array::push_back( mComponents, AComponent );
 			AComponent->AttachedTo( this );
 		 }
 	}
 
 	void Actor::DeattachComponent( Component* AComponent )
 	{
-		int FoundIndex = array::find( mAttachedComponents, AComponent );
+		int FoundIndex = array::find( mComponents, AComponent );
 
 		if( FoundIndex != INDEX_NONE )
 		{
-			array::remove_swap( mAttachedComponents, AComponent );
+			array::remove_swap( mComponents, AComponent );
 			AComponent->DeattachedFrom( this );
 		}
 	}

@@ -4,7 +4,6 @@
 #include <hge/hgesprite.h>
 #include "Vector2.h"
 #include "World.h"
-#include "PhysicsWorld.h"
 #include "PhysicsTypes.h"
 #include "CollisionComponent.h"
 

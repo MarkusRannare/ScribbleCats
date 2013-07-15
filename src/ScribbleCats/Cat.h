@@ -18,7 +18,7 @@ namespace Scribble
 			virtual void Tick( float Dt );
 			virtual void Render();
 
-			virtual void Landed( const TraceResult& CollisionInfo );
+			virtual void Landed( const TraceHit& CollisionInfo );
 		protected:
 			virtual void SimulatePhysics( float Dt );
 			virtual void PhysWalking( float Dt );

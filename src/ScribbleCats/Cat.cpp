@@ -5,8 +5,7 @@
 #include "Tileset.h"
 #include "World.h"
 
-#include "AARB.h"
-#include "PhysicsWorld.h"
+#include "AABB.h"
 #include <hge/hgeresource.h>
 #include "box2d\Box2D.h"
 #include "CollisionComponent.h"
@@ -25,8 +24,8 @@ namespace Scribble
 		mWalkLeft = g_ResManager->GetAnimation( "Player.WalkLeft" );
 		mWalkRight = g_ResManager->GetAnimation( "Player.WalkRight" );
 
-		mCollisionComponent = CollisionComponent::CreateRectangle( b2_kinematicBody, Location, 28.0f, 31.0f );
-		AttachComponent( mCollisionComponent );
+		mCollision = CollisionComponent::CreateRectangle( b2_kinematicBody, Location, 28.0f, 31.0f );
+		AttachComponent( mCollision );
 		
 		mWalkLeft->Play();
 		mWalkRight->Play();
@@ -106,7 +105,7 @@ namespace Scribble
 		g_World->MoveActor( this, DesiredDestination );
 	}
 
-	void Cat::Landed( const TraceResult& CollisionInfo )
+	void Cat::Landed( const TraceHit& CollisionInfo )
 	{
 		if( CollisionInfo.HitNormal.Y < -0.8f )
 		{
@@ -162,10 +161,5 @@ namespace Scribble
 		{
 			mCurrentAnim->RenderEx( mLocation.X, mLocation.Y, 0, 0.25f, 0.25f );
 		}
-		/*extern bool g_DebugRenderPhysics;
-		if( g_DebugRenderPhysics )
-		{
-			DrawAARB( mCollision, 0xffffff00 );
-		}*/
 	}
 }
