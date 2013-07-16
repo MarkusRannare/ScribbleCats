@@ -358,7 +358,7 @@ namespace Scribble
 			b2TimeOfImpact( &Output, &Input );
 
 			// @TODO: Handle other cases than touching...
-			if( Output.state == b2TOIOutput::e_touching && Output.t < FirstHit.t )
+			if( ( Output.state == b2TOIOutput::e_touching || Output.state == b2TOIOutput::e_failed || Output.state == b2TOIOutput::e_overlapped ) && Output.t < FirstHit.t )
 			{
 				Vector2 HitLocation = Vector2::Lerp( From, To, Output.t );
 				Vector2 HitNormal = B2ToVector( ComputeNormal( *TraceAgainst->mFixture->GetShape(), VectorToB2( HitLocation * TO_PHYSICS ), TraceAgainst->mPhysicsBody->GetTransform() ) );
