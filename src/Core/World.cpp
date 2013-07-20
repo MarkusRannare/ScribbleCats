@@ -1,16 +1,13 @@
 #include "World.h"
 
 #include "array_functions.h"
-#include "PhysicsWorld.h"
 #include "Box2DDebugDraw.h"
 #include "CollisionComponent.h"
-#include "foundation/temp_allocator.h"
+#include <Core/temp_allocator.h>
 
 extern bool g_DebugRenderPhysics;
 
 using namespace foundation;
-
-#include "Cat.h"
 
 namespace Scribble
 {
@@ -129,6 +126,7 @@ namespace Scribble
 		{
 			mDebugPhysics->ClearFlags( 0xffffffff );
 			mDebugPhysics->AppendFlags( b2Draw::e_shapeBit );
+			mDebugPhysics->AppendFlags( b2Draw::e_aabbBit );
 			mPhysicsWorld.DrawDebugData();
 		}
 	}
@@ -162,10 +160,10 @@ namespace Scribble
 				bool mFoundAnyCollision;
 		};
 
-		// @TODO: Use collision component instead of mCollision as it's not supported anymore
 		b2AABB TargetLocation;
-		TargetLocation.lowerBound = VectorToB2( ( ToLocation - Actor->mCollision._Extent ) * TO_PHYSICS );
-		TargetLocation.upperBound = VectorToB2( ( ToLocation + Actor->mCollision._Extent ) * TO_PHYSICS );
+		AABB AABB =	Actor->mCollision->GetAABB( CollisionComponent::S_World );
+		TargetLocation.lowerBound = VectorToB2( ( ToLocation - AABB._Extent ) * TO_PHYSICS );
+		TargetLocation.upperBound = VectorToB2( ( ToLocation + AABB._Extent ) * TO_PHYSICS );
 		
 		FreeSpaceCallback Callback;
 		mPhysicsWorld.QueryAABB( &Callback, TargetLocation );
@@ -184,13 +182,14 @@ namespace Scribble
 
 	bool World::ResolveCollision( Actor* Actor, 
 		const Vector2& TargetLocation,
-		const TraceResult& CollisionInfo,
+		const TraceHit& CollisionInfo,
 		float TimesliceRemaining,
 		Vector2& out_NewWantedLocation )
 	{
-		Vector2 Displacement = TargetLocation - Actor->mLocation;
+		Vector2 Displacement = TargetLocation - Actor->GetLocation();
 
-		Actor->mLocation += Displacement * ( CollisionInfo.HitTime - 0.001f );
+		// Move the actor to the location we hit and leave a little space
+		Actor->mLocation = CollisionInfo.HitLocation;
 
 		// Kill all velocity in the direction of the normal for our current actor
 		Actor->mVelocity -= Actor->mVelocity.Dot( CollisionInfo.HitNormal ) * CollisionInfo.HitNormal;
@@ -199,8 +198,9 @@ namespace Scribble
 		Displacement -= Displacement.Dot( CollisionInfo.HitNormal ) * CollisionInfo.HitNormal;
 
 		out_NewWantedLocation = Actor->mLocation + Displacement * ( 1.0f - CollisionInfo.HitTime ) * TimesliceRemaining;
-		
-		return Displacement == Vector2::ZERO;
+
+		// We don't want any further movement if 
+		return Displacement == Vector2::ZERO || Actor->mVelocity == Vector2::ZERO;
 	}
 
 	static void CalculateQueryRegion( const Vector2& From, const Vector2& To, const Vector2& Extent, b2AABB& QueryRegion )
@@ -214,30 +214,28 @@ namespace Scribble
 	// Compute the normal at the specified point.
 	b2Vec2 ComputeNormal( const b2Shape& Shape, const b2Vec2& Point, const b2Transform& Xf )
 	{
-		// @TODO: Implement and verify
-<<<<<<< HEAD
-		assert( false && "Not actually tested at all! DO THIS NAO!" );
-=======
-		//assert( false && "Not actually tested at all! DO THIS NAO!" );
->>>>>>> 6fe59819252e46c8266585727fa0d61de914d754
-
 		if( Shape.GetType() == b2Shape::e_circle )
 		{
 			const b2CircleShape& Circle = static_cast<const b2CircleShape&>( Shape );
-			b2Vec2 Normal = Point - b2Mul( Xf, /*circle.GetLocalPosition()*/ b2Vec2_zero );
-			assert( false && "Not sure if the normal is calculated correctly, verify!" );
+
+			b2Vec2 Normal = Point - Xf.p;
 			Normal.Normalize();
+
 			return Normal;
 		}
 		if( Shape.GetType() == b2Shape::e_polygon )
 		{
 			const b2PolygonShape& Poly = static_cast<const b2PolygonShape&>( Shape );
+
 			int Count = Poly.GetVertexCount();
-			//const b2Vec2* Vertices = Poly.m_vertices;// GetVertices();
-			const b2Vec2* Normals = Poly.m_normals; // GetNormals();
+			const b2Vec2* Normals = Poly.m_normals;
+
+			// Calculate the hit point
 			b2Vec2 P = b2MulT( Xf, Point );
+
 			int NormalIndex = 0;
 			float MaxSeparation = -b2_maxFloat;
+			// Find closest vertice
 			for( int Idx = 0; Idx < Count; ++Idx )
 			{
 				float Separation = b2Dot( P - Poly.GetVertex( Idx ), Normals[Idx] );
@@ -247,6 +245,7 @@ namespace Scribble
 					NormalIndex = Idx;
 				}
 			}
+			// Transform the normal into world space
 			return b2Mul( Xf.q, Normals[NormalIndex] );
 		}
 		if ( Shape.GetType() == b2Shape::e_edge )
@@ -255,13 +254,13 @@ namespace Scribble
 			/*const b2EdgeShape& Edge = static_cast<const b2EdgeShape&>( Shape );
 			return b2Mul( Xf.R, Edge.GetNormalVector() );*/
 		}
-		assert( false );
+		assert( false && "Trying to calculate normal for unknown shape type" );
 
 		return b2Vec2_zero;
 	}
 
 
-	bool World::Trace( Actor* Source, const Vector2& From, const Vector2& To, const Vector2& Extent, TraceResult& Result, unsigned int Flags /* = 0 */ )
+	bool World::Trace( Actor* Source, const Vector2& From, const Vector2& To, const Vector2& Extent, TraceHit* Result /** =NULL */, unsigned int Flags /* = 0 */ )
 	{
 		// @TODO: Should we allow tracing without a source, so that we don't ignore any collision from the trace?
 		assert( Source );
@@ -284,7 +283,7 @@ namespace Scribble
 					CollisionComponent* OwningComponent = (CollisionComponent*)UserData;
 
 					// @TODO: Add other checks here, like, ownership checks
-					if( OwningComponent && OwningComponent->GetOwner() != Source )
+					if( OwningComponent && !Source->IsOwner( OwningComponent ) )
 					{
 						array::push_back( HitComponents, OwningComponent );
 					}
@@ -294,7 +293,9 @@ namespace Scribble
 
 				// Able to store 1024(512 in 64bit) results! This should be more than enough!
 				TempAllocator4096 Allocator;
+				// All components that was hit
 				Array<CollisionComponent*> HitComponents;
+				// The actor that does the trace
 				Actor* Source;
 		};
 
@@ -303,8 +304,6 @@ namespace Scribble
 		CalculateQueryRegion( From, To, Extent, QueryRegion );
 		TraceAABBCallback BroadphaseQuery( Source );
 		mPhysicsWorld.QueryAABB( &BroadphaseQuery, QueryRegion );
-
-		memset( &Result, 0, sizeof( TraceResult ) );
 
 		// The box we will sweep
 		b2PolygonShape SweepShape;
@@ -327,6 +326,11 @@ namespace Scribble
 
 		Input.tMax = 1.0f;
 
+		if( Result )
+		{
+			memset( Result, 0, sizeof( TraceHit ) );
+		}
+
 		bool HitSomething = false;
 		b2TOIOutput FirstHit;
 		FirstHit.t = 1.0001f;
@@ -335,13 +339,12 @@ namespace Scribble
 		{
 			CollisionComponent* TraceAgainst = TraceList[Idx];
 
-			// @todo: Cache mass calculation or do it more efficient
-			b2MassData Mass;
-			TraceAgainst->mFixture->GetShape()->ComputeMass( &Mass, 1.0f );
 			Input.proxyB.Set( TraceAgainst->mFixture->GetShape(), 0 );
 			// Setup the other body as stationary
 			Input.sweepB.alpha0 = 0;
-			// @todo: Do we need to set this?
+			// @todo: Cache mass calculation or do it more efficient
+			b2MassData Mass;
+			TraceAgainst->mFixture->GetShape()->ComputeMass( &Mass, 1.0f );
 			Input.sweepB.localCenter = Mass.center;
 			Input.sweepB.c0 = VectorToB2( TraceAgainst->GetLocation() * TO_PHYSICS );
 			Input.sweepB.c = VectorToB2( TraceAgainst->GetLocation() * TO_PHYSICS );
@@ -354,7 +357,7 @@ namespace Scribble
 			b2TimeOfImpact( &Output, &Input );
 
 			// @TODO: Handle other cases than touching...
-			if( Output.state == b2TOIOutput::e_touching && Output.t < FirstHit.t )
+			if( ( Output.state == b2TOIOutput::e_touching || Output.state == b2TOIOutput::e_failed || Output.state == b2TOIOutput::e_overlapped ) && Output.t < FirstHit.t )
 			{
 				Vector2 HitLocation = Vector2::Lerp( From, To, Output.t );
 				Vector2 HitNormal = B2ToVector( ComputeNormal( *TraceAgainst->mFixture->GetShape(), VectorToB2( HitLocation * TO_PHYSICS ), TraceAgainst->mPhysicsBody->GetTransform() ) );
@@ -365,17 +368,20 @@ namespace Scribble
 				// [->]		( Neither is this )
 				// [  ] 
 				float HitDot = HitNormal.Dot( Vector2::Normalize( To - From ) );
-				if( Output.t <= 0 && ( HitDot == 0.0f || HitDot == 1.0f ) )
+				if( Output.t <= 0 && HitDot >= 0.0f )
 				{
 					continue;
 				}
 
 				FirstHit = Output;
-				Result.HitComponent = TraceAgainst;
-				Result.HitActor = TraceAgainst->GetOwner();
-				Result.HitLocation = HitLocation;
-				Result.HitNormal = HitNormal;
-				Result.HitTime = Output.t;
+				if( Result )
+				{
+					Result->HitComponent = TraceAgainst;
+					Result->HitActor = TraceAgainst->GetOwner();
+					Result->HitLocation = HitLocation;
+					Result->HitNormal = HitNormal;
+					Result->HitTime = Output.t;
+				}
 				HitSomething = true;
 			}
 		}
@@ -383,18 +389,20 @@ namespace Scribble
 		return HitSomething;
 	}
 
-	bool World::MoveActor( Actor* Actor, const Vector2& ToLocation )
+	bool World::MoveActor( Actor* Actor, const Vector2& FromLocation, const Vector2& ToLocation )
 	{
 		// No collision for the physics body, just move it there
-		if( Actor->mCollisionComponent == NULL )
+		if( Actor->mCollision == NULL )
 		{
 			Actor->mLocation = ToLocation;
 			return false;
 		}
 
 		bool HitSomething = false;
+
 		Vector2 TargetLocation = ToLocation;
-		Vector2 FromLocation = Actor->mLocation;
+		Vector2 SourceLocation = FromLocation;
+
 		float TimesliceLeft = 1.0f;
 
 		const float TIMESLICE_EPSILON = 0.00001f;
@@ -404,8 +412,9 @@ namespace Scribble
 
 		while( TimesliceLeft > TIMESLICE_EPSILON )
 		{
-			TraceResult Result;
-			bool HitObject = Trace( Actor, FromLocation, TargetLocation, Vector2( 32, 28 ), Result );
+			TraceHit Result;
+
+			bool HitObject = Trace( Actor, SourceLocation, TargetLocation, Vector2( 32, 28 ), &Result );
 					
 			if( !HitObject )
 			{
@@ -422,11 +431,13 @@ namespace Scribble
 				Vector2 NewTargetLocation;
 				bool ShouldAbort = ResolveCollision( Actor, TargetLocation, Result, TimesliceLeft, NewTargetLocation );
 				TargetLocation = NewTargetLocation;
+				SourceLocation = Actor->mLocation;
 
 				// We have possible landed
-				if( OldVelocity.Y > 0 && Actor->mVelocity.Y == 0 )
+				if( Actor->GetPhysics() == Actor::PHYS_Falling && OldVelocity.Y > 0 && Actor->mVelocity.Y == 0 )
 				{
 					Actor->Landed( Result );
+					ShouldAbort = true;
 				}
 
 				if( Counter++ > 32 )

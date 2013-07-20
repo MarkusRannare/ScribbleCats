@@ -1,5 +1,5 @@
 #include "Tileset.h"
-#include <foundation/memory.h>
+#include <Core/memory.h>
 #include "array_functions.h"
 #include <hge/hgesprite.h>
 #include "Vector2.h"

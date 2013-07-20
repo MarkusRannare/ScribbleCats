@@ -31,12 +31,23 @@
 class hgeFont
 {
 public:
+	/**
+	 * Ugly workaround to prevent incorrect conversion to va_list when
+	 * buffered output is trying to call print its output
+	 */
+	struct va_wrapper
+	{
+		va_list Args;
+	};
+public:
 	hgeFont(const char *filename, bool bMipmap=false);
 	~hgeFont();
 
 	void		Render(float x, float y, int align, const char *string);
 	void		printf(float x, float y, int align, const char *format, ...);
+	void		_printf(float x, float y, int align, const char *format, va_wrapper args );
 	void		printfb(float x, float y, float w, float h, int align, const char *format, ...);
+	void		_printfb(float x, float y, float w, float h, int align, const char *format, va_wrapper args );
 
 	void		SetColor(DWORD col);
 	void		SetZ(float z);

@@ -2,7 +2,7 @@
 #define SCRIBBLE_TILESET_H
 
 #include "Actor.h"
-#include <foundation/collection_types.h>
+#include <Core/collection_types.h>
 #include <hge/hge.h>
 #include "PhysicsTypes.h"
 

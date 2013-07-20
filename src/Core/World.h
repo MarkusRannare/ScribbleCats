@@ -3,7 +3,7 @@
 
 #include "Actor.h"
 #include <assert.h>
-#include "foundation/array.h"
+#include <Core/array.h>
 #include <box2d/Box2D.h>
 
 namespace Scribble

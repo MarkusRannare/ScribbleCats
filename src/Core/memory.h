@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "memory_types.h"
+#include <new>
 
 namespace foundation
 {
@@ -54,7 +55,7 @@ namespace foundation
 	#define MAKE_NEW(a, T, ...)		(new ((a).allocate(sizeof(T), alignof(T))) T(__VA_ARGS__))
 
 	/// Frees an object allocated with MAKE_NEW.
-	#define MAKE_DELETE(a, T, p)	do {if (p) {(p)->~T(); a.deallocate(p);}} while (0)
+	#define MAKE_DELETE(a, T, p)	do {if (p) {(p)->~T(); (a).deallocate(p);}} while (0)
 
 	/// Functions for accessing global memory data.
 	namespace memory_globals {

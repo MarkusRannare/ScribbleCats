@@ -1,7 +1,7 @@
 #ifndef SCRIBBLE_CAT_H
 #define SCRIBBLE_CAT_H
 
-#include "Actor.h"
+#include <Core/Actor.h>
 
 #include <hge/hgeanim.h>
 

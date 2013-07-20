@@ -2,7 +2,7 @@
 #define SCRIBBLE_ARRAY_FUNCTIONS_H
 
 #include <Windows.h>
-#include "foundation/array.h"
+#include <Core/array.h>
 
 namespace foundation
 {

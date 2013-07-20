@@ -1,14 +1,14 @@
 #include "Cat.h"
-#include "foundation/memory.h"
+#include <Core/memory.h>
 #include <memory>
 #include <hge/hge.h>
-#include "Tileset.h"
-#include "World.h"
+#include <Core/Tileset.h>
+#include <Core/World.h>
 
-#include "AABB.h"
+#include <Core/AABB.h>
 #include <hge/hgeresource.h>
-#include "box2d\Box2D.h"
-#include "CollisionComponent.h"
+#include <box2d\Box2D.h>
+#include <Core/CollisionComponent.h>
 
 extern HGE* g_Hge;
 extern hgeResourceManager* g_ResManager;

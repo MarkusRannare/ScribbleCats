@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Foundation">
+      <UniqueIdentifier>{03510fb5-7ad1-4b83-85b1-6fabea1784fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foundation\Inc">
+      <UniqueIdentifier>{4630871a-b3cb-406b-8f54-446174eb49a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foundation\Src">
+      <UniqueIdentifier>{19e1e533-b9ba-41d4-a9b4-1dfca78b91dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Components">
+      <UniqueIdentifier>{0659bc9a-b6fd-46df-a929-54b8c8e65c16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Editor">
+      <UniqueIdentifier>{885a55f8-f771-4ec2-bee5-bc2c79f2e2ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI">
+      <UniqueIdentifier>{b812b7c4-eccd-4093-8610-425ddcb3681d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Phisics">
+      <UniqueIdentifier>{ec6327a0-df1e-46bc-a3c3-c6a2bf2037c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI">
+      <UniqueIdentifier>{c692e297-d3dd-4ee5-981e-b7553792c846}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components">
+      <UniqueIdentifier>{bf9f797d-207f-40e6-9861-8b7caeda70ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor">
+      <UniqueIdentifier>{401a2493-5c76-45a4-aa39-3cfd13730d4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Physics">
+      <UniqueIdentifier>{f08c3790-e5cf-4d45-8c4a-084331f6c4fb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="types.h">
+      <Filter>Foundation\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="temp_allocator.h">
+      <Filter>Foundation\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="string_stream.h">
+      <Filter>Foundation\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="queue.h">
+      <Filter>Foundation\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="memory_types.h">
+      <Filter>Foundation\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="memory.h">
+      <Filter>Foundation\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="math_types.h">
+      <Filter>Foundation\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="hash.h">
+      <Filter>Foundation\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="collection_types.h">
+      <Filter>Foundation\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="array.h">
+      <Filter>Foundation\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="murmur_hash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GUIHandler.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Tab.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TabBar.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TopBar.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TopButton.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="World.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorExtension.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionComponent.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="AABB.h">
+      <Filter>Header Files\Phisics</Filter>
+    </ClInclude>
+    <ClInclude Include="Box2DDebugDraw.h">
+      <Filter>Header Files\Phisics</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsTypes.h">
+      <Filter>Header Files\Phisics</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="array_functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tileset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="string_stream.cpp">
+      <Filter>Foundation\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="murmur_hash.cpp">
+      <Filter>Foundation\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="memory.cpp">
+      <Filter>Foundation\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="GUIHandler.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Tab.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TabBar.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TopBar.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TopButton.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="World.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionComponent.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorExtension.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Box2DDebugDraw.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tileset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

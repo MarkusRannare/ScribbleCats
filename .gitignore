@@ -18,6 +18,7 @@ Thumbs.db
 *.sbr
 *.exe
 *.pdb
+*.exp
 obj/
 _ReSharper*/
 [Tt]est[Rr]esult*
@@ -26,4 +27,6 @@ _ReSharper*/
 *.ipch
 #Ignore files in intermediate directory
 intermediate/*
+bin/Debug/EditorExtensions/*
+bin/Release/EditorExtensions/*
 

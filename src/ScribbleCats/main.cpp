@@ -1,16 +1,21 @@
 #include <memory>
-#include <foundation\memory.h>
+#include <core/memory.h>
+#include <core/string_stream.h>
 
 #include <hge\hge.h>
 #include <hge\hgeresource.h>
-#include <hge\hgefont.h>
 #include <hge\hgegui.h>
-#include "CollisionComponent.h"
+#include <Core/CollisionComponent.h>
 
-#include "World.h"
-#include "Tileset.h"
+#include <Core/World.h>
+#include <Core/Tileset.h>
 #include "Cat.h"
 #include <cassert>
+#include <Core/TabBar.h>
+#include <Core/TopBar.h>
+#include <Core/GUIHandler.h>
+#include <Core/TopButton.h>
+#include <Core/EditorExtension.h>
 
 // @DEBUG: Set this to 1 to se the result of a trace
 #define DEBUG_TRACE 0
@@ -18,11 +23,13 @@
 using namespace foundation;
 using namespace Scribble;
 
+bool g_IsEditor = false;
+
 HGE* g_Hge = NULL;
 Tileset* g_Tileset = NULL;
 World* g_World = NULL;
-hgeFont* g_Font = NULL;
 hgeResourceManager* g_ResManager = NULL;
+GUIHandler* g_GUI = NULL;
 
 bool g_DebugRenderPhysics = true;
 
@@ -35,110 +42,116 @@ Vector2 SweepSource, SweepDestination, SweepExtent;
 TraceHit Trace;
 #endif
 
+Array<EditorExtension*>* g_EditorExtensions = NULL;
 int g_ScreenWidth = 1280;
 int g_ScreenHeight = 720;
 
 Cat* g_Cat = NULL;
 
 short* LoadTileLayer( const char* FromFile );
+void FindEditorExtensions( Array<EditorExtension*>& Out_Extensions );
 
 INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, __in_opt LPSTR lpCmdLine, __in int nShowCmd )
 {
 	foundation::memory_globals::init();
-
-	g_Hge = hgeCreate(HGE_VERSION);
-
-	g_Hge->System_SetState(HGE_FRAMEFUNC, FrameFunc);
-	g_Hge->System_SetState(HGE_RENDERFUNC, RenderFunc);
-	g_Hge->System_SetState(HGE_TITLE, "Scribbor catzorz");
-	
-	g_Hge->System_SetState(HGE_SCREENWIDTH, g_ScreenWidth );
-	g_Hge->System_SetState(HGE_SCREENHEIGHT, g_ScreenHeight );
-	
-	g_Hge->System_SetState(HGE_INIFILE, "../Media/Config.ini" );
-	
-	g_Hge->System_SetState(HGE_FPS, 60);
-	
-	g_Hge->System_SetState(HGE_WINDOWED, true);
-	g_Hge->System_SetState(HGE_USESOUND, true);
-	g_Hge->System_SetState(HGE_SHOWSPLASH, false);
-
-	g_Hge->System_SetState(HGE_HIDEMOUSE, true);
-
-	if(g_Hge->System_Initiate())
+	// Scope up so that arrays are deallocated before the memory subsystem does
 	{
-		g_ResManager = MAKE_NEW( memory_globals::default_allocator(), hgeResourceManager, "../Media/Resources.res" );
+		Array<EditorExtension*> Extensions( memory_globals::default_allocator() );
+		g_EditorExtensions = &Extensions;
 
-		g_Font = MAKE_NEW( memory_globals::default_allocator(), hgeFont, "../Media/Fonts/font1.fnt" );
+		if( strstr( lpCmdLine, "-editor" ) != NULL )
+		{
+			g_IsEditor = true;
+		}
 
-		g_World = MAKE_NEW( memory_globals::default_allocator(), World );
-		g_Tileset = g_World->Spawn<Tileset>( Vector2( 0, 0 ) );
-		g_Cat = g_World->Spawn<Cat>( Vector2( 200, 50 ) );
-		g_Tileset->AddLayer( 100, 100, 32.0f, LoadTileLayer( "ArtTest.MAR" ), g_Hge->Texture_Load( "../Media/Textures/Tileset.png" ) ); 
+		g_Hge = hgeCreate(HGE_VERSION);
+
+		g_Hge->System_SetState(HGE_FRAMEFUNC, FrameFunc);
+		g_Hge->System_SetState(HGE_RENDERFUNC, RenderFunc);
+		g_Hge->System_SetState(HGE_TITLE, "Scribbor catzorz");
+	
+		g_Hge->System_SetState(HGE_SCREENWIDTH, g_ScreenWidth );
+		g_Hge->System_SetState(HGE_SCREENHEIGHT, g_ScreenHeight );
+	
+		g_Hge->System_SetState(HGE_INIFILE, "../Media/Config.ini" );
+	
+		g_Hge->System_SetState(HGE_FPS, 60);
+	
+		g_Hge->System_SetState(HGE_WINDOWED, true);
+		g_Hge->System_SetState(HGE_USESOUND, true);
+		g_Hge->System_SetState(HGE_SHOWSPLASH, false);
+
+		g_Hge->System_SetState(HGE_HIDEMOUSE, true);
+
+		if( g_Hge->System_Initiate() )
+		{
+			g_ResManager = MAKE_NEW( memory_globals::default_allocator(), hgeResourceManager, "../Media/Resources.res" );
+
+			g_World = MAKE_NEW( memory_globals::default_allocator(), World );
+			g_GUI = MAKE_NEW( memory_globals::default_allocator(), GUIHandler );
+			if( g_IsEditor )
+			{
+				if( TabBar* TabBar = g_GUI->ShowTabBar() )
+				{
+					TabBar->AddTab( "Test" );
+				}
+				if( TopBar* TopBar = g_GUI->ShowTopBar() )
+				{
+					using namespace string_stream;
+
+					FindEditorExtensions( Extensions );
+					TopButton* File = TopBar->AddButton( "File" );
+					File->AddSubText( "New" );
+					File->AddSubText( "Open" );
+					File->AddSubText( "Save" );
+					File->AddSubText( "Save As" );
+					File->AddSubText( "Quit" );
+
+					TopButton* Tools = TopBar->AddButton( "Tools" );
+					for( uint32_t Idx = 0; Idx < array::size( Extensions ); ++Idx )
+					{
+						Tools->AddSubText( Extensions[Idx]->GetExtensionName() );
+					}
+				}
+			}
+			else
+			{
+				g_Tileset = g_World->Spawn<Tileset>( Vector2( 0, 0 ) );
+				g_Cat = g_World->Spawn<Cat>( Vector2( 200, 50 ) );
+				g_Tileset->AddLayer( 100, 100, 32.0f, LoadTileLayer( "ArtTest.MAR" ), g_Hge->Texture_Load( "../Media/Textures/Tileset.png" ) ); 
 
 #if DEBUG_TRACE
-		CollisionComponent* Comp = CollisionComponent::CreateCircle( b2_staticBody, Vector2( 500, 500 ), 25.0f );
-		g_Tileset->AttachComponent( Comp );
+				CollisionComponent* Comp = CollisionComponent::CreateCircle( b2_staticBody, Vector2( 500, 500 ), 25.0f );
+				g_Tileset->AttachComponent( Comp );
 
-		SweepExtent = Vector2( 20, 20 );
+				SweepExtent = Vector2( 20, 20 );
 #endif
+			}
 
-		g_Hge->System_Start();
-	}
-	else
-	{	
-		// If HGE initialization failed show error message
-		MessageBoxA(NULL, g_Hge->System_GetErrorMessage(), "Error", MB_OK | MB_ICONERROR | MB_APPLMODAL);
-	}
+			g_Hge->System_Start();
+		}
+		else
+		{	
+			// If HGE initialization failed show error message
+			MessageBoxA(NULL, g_Hge->System_GetErrorMessage(), "Error", MB_OK | MB_ICONERROR | MB_APPLMODAL);
+		}
 
-	g_World->ClearActorList();
+		g_World->ClearActorList();
 	
-	MAKE_DELETE( memory_globals::default_allocator(), hgeFont, g_Font );
-	MAKE_DELETE( memory_globals::default_allocator(), World, g_World );
-	MAKE_DELETE( memory_globals::default_allocator(), hgeResourceManager, g_ResManager );
+		for( uint32_t Idx = 0; Idx < array::size( Extensions ); ++Idx )
+		{
+			Extensions[Idx]->Destroy();
+		}
+		MAKE_DELETE( memory_globals::default_allocator(), GUIHandler, g_GUI );
+		MAKE_DELETE( memory_globals::default_allocator(), World, g_World );
+		MAKE_DELETE( memory_globals::default_allocator(), hgeResourceManager, g_ResManager );
 
-	g_Hge->Release();
+		g_Hge->Release();
 
+	}
 	foundation::memory_globals::shutdown();
 	
 	return EXIT_SUCCESS;
-}
-
-bool FrameFunc()
-{
-	float DeltaTime = g_Hge->Timer_GetDelta();
-
-	if( g_Hge->Input_KeyDown( HGEK_P ) )
-	{
-		g_DebugRenderPhysics = !g_DebugRenderPhysics;
-	}
-	if( g_Hge->Input_KeyDown( HGEK_R ) )
-	{
-		g_Hge->Texture_Free( g_Tileset->mLayers[0].SourceTexture );
-		g_Tileset->mLayers[0].SourceTexture = g_Hge->Texture_Load( "../Media/Textures/Tileset.png" );
-	}
-
-	g_World->Tick( DeltaTime );
-
-#if DEBUG_TRACE
-	if( g_Hge->Input_KeyUp( HGEK_LBUTTON ) )
-	{
-		SweepMoveSource = !SweepMoveSource;
-	}
-
-	Vector2& ToMove = SweepMoveSource ? SweepSource : SweepDestination;
-	Vector2 MousePos;
-
-	g_Hge->Input_GetMousePos( &MousePos.X, &MousePos.Y );
-	
-	ToMove += MousePos - Vector2( g_ScreenWidth / 2.0f, g_ScreenHeight / 2.0f );
-	
-	g_Hge->Input_SetMousePos( g_ScreenWidth / 2.0f, g_ScreenHeight / 2.0f );
-
-	g_World->Trace( g_Cat, SweepSource, SweepDestination, SweepExtent, &Trace );
-#endif
-
-	return false;
 }
 
 /** Debug function for drawing boxes... */
@@ -217,6 +230,48 @@ void DrawSweeping( const Vector2& From, const Vector2& To, const Vector2& Extent
 	}
 }
 
+bool FrameFunc()
+{
+	float DeltaTime = g_Hge->Timer_GetDelta();
+
+	if( g_Hge->Input_KeyDown( HGEK_P ) )
+	{
+		g_DebugRenderPhysics = !g_DebugRenderPhysics;
+	}
+	if( g_Hge->Input_KeyDown( HGEK_R ) )
+	{
+		g_Hge->Texture_Free( g_Tileset->mLayers[0].SourceTexture );
+		g_Tileset->mLayers[0].SourceTexture = g_Hge->Texture_Load( "../Media/Textures/Tileset.png" );
+	}
+
+	g_World->Tick( DeltaTime );
+
+	g_GUI->Tick( DeltaTime );
+
+#if DEBUG_TRACE
+	if( g_Cat )
+	{
+		if( g_Hge->Input_KeyUp( HGEK_LBUTTON ) )
+		{
+			SweepMoveSource = !SweepMoveSource;
+		}
+
+		Vector2& ToMove = SweepMoveSource ? SweepSource : SweepDestination;
+		Vector2 MousePos;
+
+		g_Hge->Input_GetMousePos( &MousePos.X, &MousePos.Y );
+	
+		ToMove += MousePos - Vector2( g_ScreenWidth / 2.0f, g_ScreenHeight / 2.0f );
+	
+		g_Hge->Input_SetMousePos( g_ScreenWidth / 2.0f, g_ScreenHeight / 2.0f );
+
+		g_World->Trace( g_Cat, SweepSource, SweepDestination, SweepExtent, &Trace );
+	}
+#endif
+
+	return false;
+}
+
 bool RenderFunc()
 {
 	float DeltaTime = g_Hge->Timer_GetDelta();
@@ -224,13 +279,26 @@ bool RenderFunc()
 	g_Hge->Gfx_BeginScene();
 	g_Hge->Gfx_Clear( ARGB( 0, 0, 0, 0 ) );
 
-	g_World->Render();
+	if( g_IsEditor )
+	{
+		g_Hge->Gfx_SetTransform( g_ScreenWidth / 2.0f, g_ScreenHeight / 2.0f, 0.0f, 40.0f, 0, 1.0f, 1.0f );
+	}
 
-	g_Font->printf( 10, 10, HGETEXT_LEFT, "FPS: %i", g_Hge->Timer_GetFPS() );
+	g_World->Render();
+	FontSettings Settings;
+	Settings.Color = ARGB( 255, 255, 255, 255 );
+	Settings.Scale = 1.0f;
+	g_GUI->SetFontSettings( Settings );
+	g_GUI->Printf( 10, 10, HGETEXT_LEFT, "FPS: %i", g_Hge->Timer_GetFPS() );
 
 #if DEBUG_TRACE
 	DrawSweeping( SweepSource, SweepDestination, SweepExtent, Trace );
 #endif
+
+	// GUI should always render without any transform
+	g_Hge->Gfx_SetTransform();
+	g_GUI->Render();
+	
 	g_Hge->Gfx_EndScene();
 
 	return false;
@@ -257,4 +325,40 @@ short* LoadTileLayer( const char* FromFile )
 	fclose( Map );
 	
 	return Tiles;
+}
+
+typedef EditorExtension* (WINAPIV* CreateExtensionFunc)( Allocator*, Allocator* );
+
+void FindEditorExtensions( Array<EditorExtension*>& Out_Extensions )
+{
+	WIN32_FIND_DATAA Data;
+	const char* Path = "EditorExtensions/*.dll";
+	
+	HANDLE FirstFile = FindFirstFileA( Path, &Data );
+
+	// Invalid directory
+	if( FirstFile == INVALID_HANDLE_VALUE )
+	{
+		return;
+	}
+
+	do
+	{
+		using namespace string_stream;
+		Buffer TmpFileName( memory_globals::default_allocator() );
+		TmpFileName << "EditorExtensions/" << Data.cFileName;
+
+		char FullFileName[MAX_PATH];
+		int FullFileNameSize = GetFullPathNameA( c_str( TmpFileName ), MAX_PATH, FullFileName, NULL );
+
+		if( HMODULE Library = LoadLibraryA( FullFileName ) )
+		{
+			CreateExtensionFunc CreateExtension = (CreateExtensionFunc)GetProcAddress( Library, "CreateExtension" );
+			
+			if( CreateExtension )
+			{
+				array::push_back( Out_Extensions, CreateExtension( &memory_globals::default_allocator(), &memory_globals::default_scratch_allocator() ) );
+			}
+		}
+	}while( FindNextFileA( FirstFile, &Data ) != NULL || GetLastError() != ERROR_NO_MORE_FILES );
 }

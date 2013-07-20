@@ -3,7 +3,7 @@
 
 #include "Object.h"
 
-#include "foundation/collection_types.h"
+#include "collection_types.h"
 
 namespace Scribble
 {
