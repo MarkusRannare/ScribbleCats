@@ -25,7 +25,6 @@ namespace Scribble
 			DeattachComponent( Comp );
 			// @TODO: Make a better way to deallocate components
 			MAKE_DELETE( memory_globals::default_allocator(), Component, Comp );
-			array::pop_back( mComponents );
 		}
 	}
 
@@ -79,7 +78,7 @@ namespace Scribble
 
 		if( FoundIndex != INDEX_NONE )
 		{
-			array::remove_swap( mComponents, AComponent );
+			array::remove_swap_index( mComponents, FoundIndex );
 			AComponent->DeattachedFrom( this );
 		}
 	}

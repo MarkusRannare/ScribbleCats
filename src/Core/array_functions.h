@@ -3,6 +3,7 @@
 
 #include <Windows.h>
 #include <Core/array.h>
+#include <cassert>
 
 namespace foundation
 {
@@ -16,6 +17,9 @@ namespace foundation
 
 		template<class T>
 		bool remove_swap( Array<T>& a, const T& item ); 
+
+		template<class T>
+		void remove_swap_index( Array<T>& a, int idx ); 
 
 		template<class T>
 		int add_zeroed( Array<T>& a );
@@ -59,24 +63,31 @@ namespace foundation
 				// and decrease the size
 				if( a[i] == item )
 				{
-					// Make sure it work with 1 element
-					if( size(a) == 1 )
-					{
-						a._size = 0;
-
-						return true;
-					}
-
-					size_t lastIndex = size(a) - 1;
-					a[i] = a[lastIndex];
-
-					--a._size;
+					remove_swap_index( a, i );
 
 					return true;
 				}
 			}
 
 			return false;
+		}
+
+		template<class T>
+		void remove_swap_index( Array<T>& a, int idx )
+		{
+			assert( idx >= 0 && (uint32_t)idx < size(a) );
+			
+			// Make sure it work with 1 element
+			if( size(a) == 1 )
+			{
+				a._size = 0;
+				return;
+			}
+
+			size_t lastIndex = size(a) - 1;
+			a[idx] = a[lastIndex];
+
+			--a._size;
 		}
 
 		template<class T>

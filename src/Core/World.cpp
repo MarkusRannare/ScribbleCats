@@ -74,27 +74,27 @@ namespace Scribble
 
 	void World::ComponentAttached( Component* TheComponent )
 	{
-		if( array::find( mComponents, TheComponent ) == INDEX_NONE )
-		{
-			array::push_back( mComponents, TheComponent );
+		int FoundIndex = array::find( mComponents, TheComponent );
+		assert( FoundIndex == INDEX_NONE && "Can't attach a already attached component"  );
 
-			if( CollisionComponent* ColCom = dynamic_cast<CollisionComponent*>( TheComponent ) )
-			{
-				array::push_back( mCollisionComponents, ColCom );
-			}
+		array::push_back( mComponents, TheComponent );
+
+		if( CollisionComponent* ColCom = dynamic_cast<CollisionComponent*>( TheComponent ) )
+		{
+			array::push_back( mCollisionComponents, ColCom );
 		}
 	}
 
 	void World::ComponentDeattached( Component* TheComponent )
 	{
-		if( array::find( mComponents, TheComponent ) != INDEX_NONE )
-		{
-			array::remove_swap( mComponents, TheComponent );
+		int FoundIndex = array::find( mComponents, TheComponent );
+		assert( FoundIndex != INDEX_NONE && "Can't deattach a component that isn't attached" );
 
-			if( CollisionComponent* ColCom = dynamic_cast<CollisionComponent*>( TheComponent ) )
-			{
-				array::remove_swap( mCollisionComponents, ColCom );
-			}
+		array::remove_swap_index( mComponents, FoundIndex );
+
+		if( CollisionComponent* ColCom = dynamic_cast<CollisionComponent*>( TheComponent ) )
+		{
+			array::remove_swap( mCollisionComponents, ColCom );
 		}
 	}
 
