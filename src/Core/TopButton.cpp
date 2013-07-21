@@ -23,7 +23,6 @@ namespace Scribble
 		mSprite( MAKE_NEW( memory_globals::default_allocator(), hgeSprite, NULL, 0, 0, 100, 100 ) )
 	{
 		memcpy_s( mText, strlen( Text ) + 1, Text, strlen( Text ) + 1 );
-		mHandler->SetFontSettings( fSettings );
 		mWidth = mHandler->GetFont()->GetStringWidth( mText );
 		mExpandedHeight = ITEM_HEIGHT;
 		mSprite->SetColor( ARGB( 255, 200, 200, 200 ) );

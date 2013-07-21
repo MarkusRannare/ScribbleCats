@@ -88,9 +88,12 @@
     <ClInclude Include="CollisionComponent.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="EditorExtension.h" />
+    <ClInclude Include="EditorGUIContainer.h" />
     <ClInclude Include="GUIHandler.h" />
+    <ClInclude Include="GUIContainer.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="PhysicsTypes.h" />
+    <ClInclude Include="GUIObject.h" />
     <ClInclude Include="Tab.h" />
     <ClInclude Include="TabBar.h" />
     <ClInclude Include="Tileset.h" />
@@ -116,7 +119,9 @@
     <ClCompile Include="CollisionComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="EditorExtension.cpp" />
+    <ClCompile Include="EditorGUIContainer.cpp" />
     <ClCompile Include="GUIHandler.cpp" />
+    <ClCompile Include="GUIContainer.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Tab.cpp" />
     <ClCompile Include="TabBar.cpp" />

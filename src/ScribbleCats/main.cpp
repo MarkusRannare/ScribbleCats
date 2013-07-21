@@ -91,28 +91,8 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 			g_GUI = MAKE_NEW( memory_globals::default_allocator(), GUIHandler );
 			if( g_IsEditor )
 			{
-				if( TabBar* TabBar = g_GUI->ShowTabBar() )
-				{
-					TabBar->AddTab( "Test" );
-				}
-				if( TopBar* TopBar = g_GUI->ShowTopBar() )
-				{
-					using namespace string_stream;
-
-					FindEditorExtensions( Extensions );
-					TopButton* File = TopBar->AddButton( "File" );
-					File->AddSubText( "New" );
-					File->AddSubText( "Open" );
-					File->AddSubText( "Save" );
-					File->AddSubText( "Save As" );
-					File->AddSubText( "Quit" );
-
-					TopButton* Tools = TopBar->AddButton( "Tools" );
-					for( uint32_t Idx = 0; Idx < array::size( Extensions ); ++Idx )
-					{
-						Tools->AddSubText( Extensions[Idx]->GetExtensionName() );
-					}
-				}
+				FindEditorExtensions( Extensions );
+				g_GUI->SetRootGUIContainer( g_GUI->CreateEditorContainer() );
 			}
 			else
 			{
@@ -147,7 +127,7 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 		MAKE_DELETE( memory_globals::default_allocator(), hgeResourceManager, g_ResManager );
 
 		g_Hge->Release();
-
+		 
 	}
 	foundation::memory_globals::shutdown();
 	

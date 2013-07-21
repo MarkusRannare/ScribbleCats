@@ -15,11 +15,10 @@ using namespace foundation;
 namespace Scribble
 {
 	TabBar::TabBar( GUIHandler* Handler ) :
+		GUIContainer( Handler ),
 		mSprite( MAKE_NEW( memory_globals::default_allocator(), hgeSprite,  NULL, 0, 0, (float)g_ScreenWidth, 20.0f ) ),
-		mTabs( memory_globals::default_allocator() ),
-		mHandler( Handler )
+		mTabs( memory_globals::default_allocator() )
 	{
-		// DO NOT USE Handler pointer here, as it's object isn't finished constructing yet, if needed, then move the code that constructs TabBar
 	}
 
 	TabBar::~TabBar()
@@ -27,7 +26,7 @@ namespace Scribble
 		MAKE_DELETE( memory_globals::default_allocator(), hgeSprite, mSprite );
 	}
 
-	void TabBar::Update( float Dt )
+	void TabBar::Tick( float Dt )
 	{
 	}
 

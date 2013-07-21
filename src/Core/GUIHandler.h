@@ -10,6 +10,7 @@ namespace Scribble
 {
 	class TopBar;
 	class TabBar;
+	class GUIContainer;
 
 	struct FontSettings
 	{
@@ -23,11 +24,7 @@ namespace Scribble
 			GUIHandler();
 			virtual ~GUIHandler();
 
-			TopBar* ShowTopBar();
-			void HideTopBar();
-
-			TabBar* ShowTabBar();
-			void HideTabBar();
+			GUIContainer* CreateEditorContainer();
 
 			void Tick( float DeltaTime );
 			void Render();
@@ -38,12 +35,13 @@ namespace Scribble
 
 			const hgeFont* GetFont() const;
 			void Printf( float X, float Y, DWORD Align, const char* Format, ... );
+
+			void SetRootGUIContainer( GUIContainer* Container );
 		private:
 			hgeGUI* mGUI;
-			TopBar* mTopBar;
-			TabBar* mTabBar;
 			FontSettings mCurrentFontSettings;
 			hgeFont* mFont;
+			GUIContainer* mRootContainer;
 	};
 }
 

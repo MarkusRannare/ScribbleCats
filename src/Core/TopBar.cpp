@@ -14,11 +14,10 @@ using namespace foundation;
 namespace Scribble
 {
 	TopBar::TopBar( GUIHandler* Handler ) :
+		GUIContainer( Handler ),
 		mSprite( MAKE_NEW( memory_globals::default_allocator(), hgeSprite, NULL, 0, 0, (float)g_ScreenWidth, 23.5f ) ),
-		mHandler( Handler ),
 		mButtons( memory_globals::default_allocator() )
 	{
-		// DO NOT USE Handler pointer here, as it's object isn't finished constructing yet, if needed, then move the code that constructs TopBar
 		mSprite->SetColor( ARGB( 255, 200, 200, 200 ) );
 	}
 
@@ -44,7 +43,7 @@ namespace Scribble
 		mHandler->GetGUI()->DelCtrl( Button->id );
 	}
 
-	void TopBar::Update( float DeltaTime )
+	void TopBar::Tick( float DeltaTime )
 	{
 		Vector2 Location( 5, 5 );
 		for( uint32_t Idx = 0; Idx < array::size( mButtons ); ++Idx )
