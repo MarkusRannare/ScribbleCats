@@ -14,7 +14,7 @@ namespace Scribble
 	class TabBar : public GUIContainer
 	{
 		public:
-			TabBar( GUIHandler* Handler );
+			TabBar( GUIHandler* Handler, const Vector2& Location );
 			virtual ~TabBar();
 
 			virtual void Render();

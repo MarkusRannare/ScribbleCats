@@ -35,6 +35,7 @@ bool g_DebugRenderPhysics = true;
 
 bool FrameFunc();
 bool RenderFunc();
+bool GfxRestoreFunc();
 
 #if DEBUG_TRACE
 bool SweepMoveSource = false;
@@ -50,6 +51,9 @@ Cat* g_Cat = NULL;
 
 short* LoadTileLayer( const char* FromFile );
 void FindEditorExtensions( Array<EditorExtension*>& Out_Extensions );
+
+HTARGET g_TargetTexture;
+hgeSprite* g_WorldSprite = NULL;
 
 INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, __in_opt LPSTR lpCmdLine, __in int nShowCmd )
 {
@@ -74,6 +78,7 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 		g_Hge->System_SetState(HGE_SCREENHEIGHT, g_ScreenHeight );
 	
 		g_Hge->System_SetState(HGE_INIFILE, "../Media/Config.ini" );
+		g_Hge->System_SetState(HGE_LOGFILE, "Game.log" );
 	
 		g_Hge->System_SetState(HGE_FPS, 60);
 	
@@ -82,6 +87,7 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 		g_Hge->System_SetState(HGE_SHOWSPLASH, false);
 
 		g_Hge->System_SetState(HGE_HIDEMOUSE, true);
+		g_Hge->System_SetState(HGE_GFXRESTOREFUNC, GfxRestoreFunc);
 
 		if( g_Hge->System_Initiate() )
 		{
@@ -93,6 +99,13 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 			{
 				FindEditorExtensions( Extensions );
 				g_GUI->SetRootGUIContainer( g_GUI->CreateEditorContainer() );
+
+				g_TargetTexture = g_Hge->Target_Create( g_ScreenWidth, g_ScreenHeight - 20 - 24, false );
+				g_WorldSprite = MAKE_NEW( memory_globals::default_allocator(), hgeSprite, g_Hge->Target_GetTexture( g_TargetTexture ), 0, 0, (float)g_ScreenWidth, (float)g_ScreenHeight - 20 - 24 );
+
+				g_Tileset = g_World->Spawn<Tileset>( Vector2( 0, 0 ) );
+				g_Cat = g_World->Spawn<Cat>( Vector2( 200, 50 ) );
+				g_Tileset->AddLayer( 100, 100, 32.0f, LoadTileLayer( "ArtTest.MAR" ), g_Hge->Texture_Load( "../Media/Textures/Tileset.png" ) ); 
 			}
 			else
 			{
@@ -118,6 +131,9 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 
 		g_World->ClearActorList();
 	
+		MAKE_DELETE( memory_globals::default_allocator(), hgeSprite, g_WorldSprite );
+		g_Hge->Target_Free( g_TargetTexture );
+
 		for( uint32_t Idx = 0; Idx < array::size( Extensions ); ++Idx )
 		{
 			Extensions[Idx]->Destroy();
@@ -210,6 +226,8 @@ void DrawSweeping( const Vector2& From, const Vector2& To, const Vector2& Extent
 	}
 }
 
+bool windowed = true;
+
 bool FrameFunc()
 {
 	float DeltaTime = g_Hge->Timer_GetDelta();
@@ -222,6 +240,11 @@ bool FrameFunc()
 	{
 		g_Hge->Texture_Free( g_Tileset->mLayers[0].SourceTexture );
 		g_Tileset->mLayers[0].SourceTexture = g_Hge->Texture_Load( "../Media/Textures/Tileset.png" );
+	}
+	if( g_Hge->Input_KeyDown( HGEK_K ) )
+	{
+		windowed = !windowed;
+		g_Hge->System_SetState(HGE_WINDOWED, windowed );
 	}
 
 	g_World->Tick( DeltaTime );
@@ -256,13 +279,9 @@ bool RenderFunc()
 {
 	float DeltaTime = g_Hge->Timer_GetDelta();
 	
-	g_Hge->Gfx_BeginScene();
+	// Render the world to a rendertarget if it's in the editor
+	g_Hge->Gfx_BeginScene( g_IsEditor ? g_TargetTexture : NULL );
 	g_Hge->Gfx_Clear( ARGB( 0, 0, 0, 0 ) );
-
-	if( g_IsEditor )
-	{
-		g_Hge->Gfx_SetTransform( g_ScreenWidth / 2.0f, g_ScreenHeight / 2.0f, 0.0f, 40.0f, 0, 1.0f, 1.0f );
-	}
 
 	g_World->Render();
 	FontSettings Settings;
@@ -274,7 +293,14 @@ bool RenderFunc()
 #if DEBUG_TRACE
 	DrawSweeping( SweepSource, SweepDestination, SweepExtent, Trace );
 #endif
+	g_Hge->Gfx_EndScene();
 
+	g_Hge->Gfx_BeginScene();
+	if( g_IsEditor )
+	{
+		g_Hge->Gfx_Clear( ARGB( 0, 0, 0, 0 ) );
+		g_WorldSprite->Render( 0, 43.0f );
+	}
 	// GUI should always render without any transform
 	g_Hge->Gfx_SetTransform();
 	g_GUI->Render();
@@ -282,6 +308,14 @@ bool RenderFunc()
 	g_Hge->Gfx_EndScene();
 
 	return false;
+}
+
+bool GfxRestoreFunc()
+{
+	// Add all rendertargets here so that the game doesn't crash when they are invalidated
+	g_WorldSprite->SetTexture( g_Hge->Target_GetTexture( g_TargetTexture ) );
+
+	return true;
 }
 
 short* LoadTileLayer( const char* FromFile )

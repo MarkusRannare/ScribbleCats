@@ -6,9 +6,10 @@ using namespace foundation;
 
 namespace Scribble
 {
-	GUIContainer::GUIContainer( GUIHandler* Handler ) :
+	GUIContainer::GUIContainer( GUIHandler* Handler, const Vector2& Location ) :
 		mSubContainers( memory_globals::default_allocator() ),
-		mHandler( Handler )
+		mHandler( Handler ),
+		mLocation( Location )
 	{
 	}
 

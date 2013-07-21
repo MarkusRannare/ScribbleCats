@@ -2,6 +2,7 @@
 #define SCRIBBLE_GUICONTAINER_H
 
 #include "collection_types.h"
+#include "Vector2.h"
 
 namespace Scribble
 {
@@ -10,7 +11,7 @@ namespace Scribble
 	class GUIContainer
 	{
 		public:
-			GUIContainer( GUIHandler* Handler );
+			GUIContainer( GUIHandler* Handler, const Vector2& Location );
 			virtual ~GUIContainer();
 
 			virtual void Enter();
@@ -23,6 +24,7 @@ namespace Scribble
 			virtual void Render();
 		protected:
 			GUIHandler* mHandler;
+			Vector2 mLocation;
 		private:
 			foundation::Array<GUIContainer*> mSubContainers;
 	};

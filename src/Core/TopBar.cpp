@@ -13,8 +13,8 @@ using namespace foundation;
 
 namespace Scribble
 {
-	TopBar::TopBar( GUIHandler* Handler ) :
-		GUIContainer( Handler ),
+	TopBar::TopBar( GUIHandler* Handler, const Vector2& Location ) :
+		GUIContainer( Handler, Location ),
 		mSprite( MAKE_NEW( memory_globals::default_allocator(), hgeSprite, NULL, 0, 0, (float)g_ScreenWidth, 23.5f ) ),
 		mButtons( memory_globals::default_allocator() )
 	{
@@ -45,7 +45,7 @@ namespace Scribble
 
 	void TopBar::Tick( float DeltaTime )
 	{
-		Vector2 Location( 5, 5 );
+		Vector2 Location = mLocation + Vector2( 5, 5 );
 		for( uint32_t Idx = 0; Idx < array::size( mButtons ); ++Idx )
 		{
 			mButtons[Idx]->SetLocation( Location.X, Location.Y, Location.X );
@@ -54,6 +54,6 @@ namespace Scribble
 
 	void TopBar::Render()
 	{
-		mSprite->Render( 0, 0 );
+		mSprite->Render( mLocation.X, mLocation.Y );
 	}
 }

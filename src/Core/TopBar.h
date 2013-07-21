@@ -14,7 +14,7 @@ namespace Scribble
 	class TopBar : public GUIContainer
 	{
 		public:
-			TopBar( GUIHandler* Handler );
+			TopBar( GUIHandler* Handler, const Vector2& Location );
 			virtual ~TopBar();
 
 			TopButton* AddButton( const char* Text );

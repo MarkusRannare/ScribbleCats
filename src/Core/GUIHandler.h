@@ -12,6 +12,7 @@ namespace Scribble
 	class TabBar;
 	class GUIContainer;
 
+
 	struct FontSettings
 	{
 		float Scale;

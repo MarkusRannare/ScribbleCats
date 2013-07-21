@@ -8,19 +8,19 @@
 
 using namespace foundation;
 
-#define CREATE_CONTAINER( Class ) MAKE_NEW( memory_globals::default_allocator(), Class, mHandler )
+#define CREATE_CONTAINER( Class, Location ) MAKE_NEW( memory_globals::default_allocator(), Class, mHandler, Location )
 #define DESTORY_CONTAINER( Class, Pointer ) MAKE_DELETE( memory_globals::default_allocator(), Class, Pointer )
 
 namespace Scribble
 {
 	EditorGUIContainer::EditorGUIContainer( GUIHandler* Handler ) :
-		GUIContainer( Handler )
+		GUIContainer( Handler, Vector2( 0, 0 ) )
 	{
-		TabBar* TabBarContainer  = CREATE_CONTAINER( TabBar );
+		TabBar* TabBarContainer = CREATE_CONTAINER( TabBar, Vector2( 0, 23.5f ) );
 		TabBarContainer->AddTab( "Test" );
 		AddSubContainer( TabBarContainer );
 
-		TopBar* TopBarContainer = CREATE_CONTAINER( TopBar );
+		TopBar* TopBarContainer = CREATE_CONTAINER( TopBar, Vector2( 0, 0 ) );
 		TopButton* File = TopBarContainer->AddButton( "File" );
 		File->AddSubText( "New" );
 		File->AddSubText( "Open" );

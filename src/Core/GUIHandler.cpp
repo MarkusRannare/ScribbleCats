@@ -7,7 +7,6 @@
 #include <hge/hgefont.h>
 #include <hge/hgeresource.h>
 #include "EditorGUIContainer.h"
-
 using namespace foundation;
 
 extern hgeResourceManager* g_ResManager;

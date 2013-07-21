@@ -5,7 +5,6 @@
 #include "Tab.h"
 #include "array_functions.h"
 #include "GUIHandler.h"
-
 #include <hge/hgesprite.h>
 
 extern int g_ScreenWidth;
@@ -14,8 +13,8 @@ using namespace foundation;
 
 namespace Scribble
 {
-	TabBar::TabBar( GUIHandler* Handler ) :
-		GUIContainer( Handler ),
+	TabBar::TabBar( GUIHandler* Handler, const Vector2& Location ) :
+		GUIContainer( Handler, Location ),
 		mSprite( MAKE_NEW( memory_globals::default_allocator(), hgeSprite,  NULL, 0, 0, (float)g_ScreenWidth, 20.0f ) ),
 		mTabs( memory_globals::default_allocator() )
 	{
@@ -32,7 +31,7 @@ namespace Scribble
 
 	void TabBar::Render()
 	{
-		mSprite->Render( 0, 20 );
+		mSprite->Render( mLocation.X, mLocation.Y );
 	}
 
 	Tab* TabBar::AddTab( const char* Text )
