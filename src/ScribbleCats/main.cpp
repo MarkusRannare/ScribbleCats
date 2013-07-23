@@ -83,7 +83,7 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 		g_Hge->System_SetState(HGE_FPS, 60);
 	
 		g_Hge->System_SetState(HGE_WINDOWED, true);
-		g_Hge->System_SetState(HGE_USESOUND, true);
+		g_Hge->System_SetState(HGE_USESOUND, false);
 		g_Hge->System_SetState(HGE_SHOWSPLASH, false);
 
 		g_Hge->System_SetState(HGE_HIDEMOUSE, true);
