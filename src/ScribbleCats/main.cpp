@@ -11,10 +11,8 @@
 #include <Core/Tileset.h>
 #include "Cat.h"
 #include <cassert>
-#include <Core/TabBar.h>
-#include <Core/TopBar.h>
-#include <Core/GUIHandler.h>
-#include <Core/TopButton.h>
+#include <Core/GUI.h>
+#include <Core/GUIObject.h>
 #include <Core/EditorExtension.h>
 
 // @DEBUG: Set this to 1 to se the result of a trace
@@ -29,7 +27,7 @@ HGE* g_Hge = NULL;
 Tileset* g_Tileset = NULL;
 World* g_World = NULL;
 hgeResourceManager* g_ResManager = NULL;
-GUIHandler* g_GUI = NULL;
+GUI* g_GUI = NULL;
 
 bool g_DebugRenderPhysics = true;
 
@@ -86,7 +84,7 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 		g_Hge->System_SetState(HGE_USESOUND, false);
 		g_Hge->System_SetState(HGE_SHOWSPLASH, false);
 
-		g_Hge->System_SetState(HGE_HIDEMOUSE, true);
+		g_Hge->System_SetState(HGE_HIDEMOUSE, false);
 		g_Hge->System_SetState(HGE_GFXRESTOREFUNC, GfxRestoreFunc);
 
 		if( g_Hge->System_Initiate() )
@@ -94,18 +92,25 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 			g_ResManager = MAKE_NEW( memory_globals::default_allocator(), hgeResourceManager, "../Media/Resources.res" );
 
 			g_World = MAKE_NEW( memory_globals::default_allocator(), World );
-			g_GUI = MAKE_NEW( memory_globals::default_allocator(), GUIHandler );
+			g_GUI = MAKE_NEW( memory_globals::default_allocator(), GUI );
 			if( g_IsEditor )
 			{
 				FindEditorExtensions( Extensions );
-				g_GUI->SetRootGUIContainer( g_GUI->CreateEditorContainer() );
 
+				g_GUI->AddObject( GNEW(GUIObject) )
+					.Height( 30 )
+					.Width( 30 )
+					.Margin( 10, 10, 10, 10 )++;
+				
 				g_TargetTexture = g_Hge->Target_Create( g_ScreenWidth, g_ScreenHeight - 20 - 24, false );
 				g_WorldSprite = MAKE_NEW( memory_globals::default_allocator(), hgeSprite, g_Hge->Target_GetTexture( g_TargetTexture ), 0, 0, (float)g_ScreenWidth, (float)g_ScreenHeight - 20 - 24 );
 
+				/*
+				g_GUI->SetRootGUIContainer( g_GUI->CreateEditorContainer() );
+
 				g_Tileset = g_World->Spawn<Tileset>( Vector2( 0, 0 ) );
 				g_Cat = g_World->Spawn<Cat>( Vector2( 200, 50 ) );
-				g_Tileset->AddLayer( 100, 100, 32.0f, LoadTileLayer( "ArtTest.MAR" ), g_Hge->Texture_Load( "../Media/Textures/Tileset.png" ) ); 
+				g_Tileset->AddLayer( 100, 100, 32.0f, LoadTileLayer( "ArtTest.MAR" ), g_Hge->Texture_Load( "../Media/Textures/Tileset.png" ) ); */
 			}
 			else
 			{
@@ -138,7 +143,7 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 		{
 			Extensions[Idx]->Destroy();
 		}
-		MAKE_DELETE( memory_globals::default_allocator(), GUIHandler, g_GUI );
+		MAKE_DELETE( memory_globals::default_allocator(), GUI, g_GUI );
 		MAKE_DELETE( memory_globals::default_allocator(), World, g_World );
 		MAKE_DELETE( memory_globals::default_allocator(), hgeResourceManager, g_ResManager );
 
@@ -249,6 +254,11 @@ bool FrameFunc()
 
 	g_World->Tick( DeltaTime );
 
+	hgeInputEvent Evt;
+	while( g_Hge->Input_GetEvent( &Evt ) )
+	{
+		g_GUI->HandleEvent( Evt );
+	}
 	g_GUI->Tick( DeltaTime );
 
 #if DEBUG_TRACE
@@ -284,11 +294,11 @@ bool RenderFunc()
 	g_Hge->Gfx_Clear( ARGB( 0, 0, 0, 0 ) );
 
 	g_World->Render();
-	FontSettings Settings;
+	/*FontSettings Settings;
 	Settings.Color = ARGB( 255, 255, 255, 255 );
 	Settings.Scale = 1.0f;
 	g_GUI->SetFontSettings( Settings );
-	g_GUI->Printf( 10, 10, HGETEXT_LEFT, "FPS: %i", g_Hge->Timer_GetFPS() );
+	g_GUI->Printf( 10, 10, HGETEXT_LEFT, "FPS: %i", g_Hge->Timer_GetFPS() );*/
 
 #if DEBUG_TRACE
 	DrawSweeping( SweepSource, SweepDestination, SweepExtent, Trace );
