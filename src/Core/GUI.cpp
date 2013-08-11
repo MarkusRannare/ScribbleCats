@@ -85,7 +85,7 @@ namespace Scribble
 
 	void GUI::RelayoutBatch( GUIObject* Object )
 	{
-		Vector2 Location( 0, 0 );
+		Vector2 Location = Object->mParent ? Object->mParent->mLocation : Vector2( 0, 0 );
 		
 		GUIObject* O = Object;
 		while( O )
@@ -93,6 +93,11 @@ namespace Scribble
 			O->mLocation = Location + Vector2( O->mMargin[GUIObject::M_Left], O->mMargin[GUIObject::M_Top] );
 
 			Location += Vector2( O->mWidth + O->mMargin[GUIObject::M_Right], 0 );
+
+			if( O->mSubObject )
+			{
+				RelayoutBatch( O->mSubObject );
+			}
 			
 			O->mDirty = false;
 

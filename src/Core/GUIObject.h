@@ -24,10 +24,16 @@ namespace Scribble
 
 			inline GUIObject& Width( float Width );
 			inline GUIObject& Height( float Height );
+			inline GUIObject& AutoHeight();
+			inline GUIObject& AutoWidth();
 			inline GUIObject& Margin( float MarginTop = 0, float MarginRight = 0, float MarginDown = 0, float MarignLeft = 0 );
 
-			GUIObject& operator+( GUIObject& Other );
-			GUIObject& operator[]( GUIObject& Other );
+			template<class T>
+			GUIObject& operator+( T& Other );
+
+			template<class T>
+			GUIObject& operator[]( T& Other );
+
 			GUIObject& operator++(int);
 
 			virtual void Tick( float Delta );
@@ -48,9 +54,12 @@ namespace Scribble
 			float mMargin[4];
 			GUIObject* mNextObject;
 			GUIObject* mSubObject;
+			GUIObject* mParent;
 
 			bool mDirty;
 			bool mFocused;
+			bool mAutoHeight;
+			bool mAutoWidth;
 
 			friend class GUI;
 	};
@@ -69,6 +78,20 @@ namespace Scribble
 		return *this;
 	}
 
+	inline GUIObject& GUIObject::AutoHeight()
+	{
+		mAutoHeight = true;
+
+		return *this;
+	}
+
+	inline GUIObject& GUIObject::AutoWidth()
+	{
+		mAutoWidth = true;
+
+		return *this;
+	}
+
 	inline GUIObject& GUIObject::Margin( float MarginTop, float MarginRight, float MarginDown, float MarignLeft )
 	{
 		mMargin[M_Top] = MarginTop;
@@ -79,7 +102,30 @@ namespace Scribble
 		return *this;
 	}
 
+	template<class T>
+	GUIObject& GUIObject::operator[]( T& Other )
+	{
+		assert( mSubObject == NULL );
+		assert( Other.mParent == NULL );
 
+		mSubObject = &Other;
+		Other.mParent = this;
+		Other.mBatch = mBatch;
+
+		return Other;
+	}
+
+	template<class T>
+	GUIObject& GUIObject::operator+( T& Other )
+	{
+		assert( Other.mNextObject == NULL );
+
+		//mNextObject = &Other;
+		Other.mNextObject = this;
+		Other.mBatch = mBatch;
+
+		return Other;
+	}
 }
 
 #endif

@@ -153,6 +153,9 @@
     <ClInclude Include="MathTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GUIPanel.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="string_stream.cpp">
@@ -216,6 +219,9 @@
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="GUIObject.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUIPanel.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
   </ItemGroup>

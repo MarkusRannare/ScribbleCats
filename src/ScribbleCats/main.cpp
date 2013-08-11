@@ -98,9 +98,24 @@ INT WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 				FindEditorExtensions( Extensions );
 
 				g_GUI->AddObject( GNEW(GUIObject) )
+					.AutoHeight()
+					.Width(150)
+					[
+						// @TODO: Fix, I don't want to type -> after GNEW (fix another GNEW or so)
+						GNEW(GUIObject)
+						->Height(40)
+						.Width(40)
+						+
+						GNEW(GUIObject)
+						->Height(40)
+						.Width(40)
+					];
+
+
+				/*g_GUI->AddObject( GNEW(GUIObject) )
 					.Height( 30 )
 					.Width( 30 )
-					.Margin( 10, 10, 10, 10 )++;
+					.Margin( 10, 10, 10, 10 )++;*/
 				
 				g_TargetTexture = g_Hge->Target_Create( g_ScreenWidth, g_ScreenHeight - 20 - 24, false );
 				g_WorldSprite = MAKE_NEW( memory_globals::default_allocator(), hgeSprite, g_Hge->Target_GetTexture( g_TargetTexture ), 0, 0, (float)g_ScreenWidth, (float)g_ScreenHeight - 20 - 24 );

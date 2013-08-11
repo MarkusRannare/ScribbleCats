@@ -94,6 +94,7 @@
     <ClInclude Include="GUIHandler.h" />
     <ClInclude Include="GUIContainer.h" />
     <ClInclude Include="GUIObject.h" />
+    <ClInclude Include="GUIPanel.h" />
     <ClInclude Include="MathTypes.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="PhysicsTypes.h" />
@@ -127,6 +128,7 @@
     <ClCompile Include="GUIHandler.cpp" />
     <ClCompile Include="GUIContainer.cpp" />
     <ClCompile Include="GUIObject.cpp" />
+    <ClCompile Include="GUIPanel.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Tab.cpp" />
     <ClCompile Include="TabBar.cpp" />

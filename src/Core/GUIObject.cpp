@@ -14,8 +14,11 @@ namespace Scribble
 		mGUI( NULL ),
 		mBatch( -1 ),
 		mLocation( Vector2( 0, 0 ) ),
-		mDirty( false ),
-		mFocused( false )
+		mDirty( true ),
+		mFocused( false ),
+		mAutoWidth( false ),
+		mAutoHeight( false ),
+		mParent( NULL )
 	{
 		mMargin[0] = 0;
 		mMargin[1] = 0;
@@ -31,7 +34,10 @@ namespace Scribble
 		mHeight( Other.mHeight ),
 		mGUI( Other.mGUI ),
 		mBatch( Other.mBatch ),
-		mFocused( false )
+		mFocused( false ),
+		mAutoHeight( Other.mAutoHeight ),
+		mAutoWidth( Other.mAutoWidth ),
+		mParent( Other.mParent )
 	{
 		mMargin[0] = Other.mMargin[0];
 		mMargin[1] = Other.mMargin[1];
@@ -41,14 +47,14 @@ namespace Scribble
 
 	GUIObject::~GUIObject()
 	{
-		if( mNextObject )
-		{
-			MAKE_DELETE( memory_globals::default_allocator(), GUIObject, mNextObject );
-		}
-
 		if( mSubObject )
 		{
 			MAKE_DELETE( memory_globals::default_allocator(), GUIObject, mSubObject );
+		}
+
+		if( mNextObject )
+		{
+			MAKE_DELETE( memory_globals::default_allocator(), GUIObject, mNextObject );
 		}
 	}
 
@@ -60,6 +66,20 @@ namespace Scribble
 			Object->Tick( Delta );
 			Object = Object->mSubObject;
 		}
+
+		// @TODO: This doesn't need to be calculated every frame, I want my tick clean
+		if( mAutoHeight )
+		{
+			extern int g_ScreenHeight;
+			mHeight = mParent ? mParent->mHeight : g_ScreenHeight;
+		}
+		if( mAutoWidth )
+		{
+			extern int g_ScreenWidth;
+			mWidth = mParent ? mParent->mWidth : g_ScreenWidth;
+		}
+
+		// @TODO: Add a SpecialTick here that objects can override
 
 		Object = mNextObject;
 		while( Object )
@@ -97,25 +117,6 @@ namespace Scribble
 	void GUIObject::Dirty()
 	{
 		mGUI->ObjectDirty( this );
-	}
-
-	GUIObject& GUIObject::operator+( GUIObject& Other )
-	{
-		assert( mNextObject == NULL );
-
-		mNextObject = &Other;
-		mNextObject->mBatch = mBatch;
-
-		return Other;
-	}
-
-	GUIObject& GUIObject::operator[]( GUIObject& Other )
-	{
-		assert( mSubObject == NULL );
-		mSubObject = &Other;
-		Other.mBatch = mBatch;
-
-		return Other;
 	}
 
 	GUIObject& GUIObject::operator++(int)
